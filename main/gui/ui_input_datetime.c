@@ -481,32 +481,11 @@ void ui_clock_setting_page(void)
     lv_obj_add_event_cb(lbtn_year, event_handler_btn, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(rbtn_year, event_handler_btn, LV_EVENT_CLICKED, NULL);
 
-// volume slider
-    slider_vol = lv_slider_create(page);
-    label_vol = lv_label_create(page);
-    lv_obj_set_width(slider_vol, 200); 
-    lv_obj_set_size(label_vol, 80, 40);
-    lv_obj_align(slider_vol, LV_ALIGN_TOP_MID, 0, upgap + 15 + delta * i++);     
-    lv_obj_align(label_vol, LV_ALIGN_TOP_LEFT, 0, lv_obj_get_y_aligned(slider_vol));   
-    lv_obj_set_style_text_font(label_vol, &lv_font_montserrat_24, 0);  
-    lv_label_set_text_fmt(label_vol, "%"LV_PRId32, setting_data.music_volume);
-    lv_obj_add_event_cb(slider_vol, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);     /*Assign an event function*/
-    lv_slider_set_value(slider_vol, setting_data.music_volume, LV_ANIM_OFF);
-// md button
-    btn_md = lv_btn_create(page);
-    label_md = lv_label_create(btn_md);
-    lv_obj_set_size(btn_md, 200, 40);
-
-    lv_obj_align(btn_md, LV_ALIGN_TOP_MID, 0, upgap + delta * i++);  
-    lv_obj_align(label_md, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_style_text_font(label_md, &lv_font_montserrat_24, 0);
-    lv_label_set_text(label_md, (setting_data.md ? "Mundane" : "!Mundane"));
-    lv_obj_add_event_cb(btn_md,event_handler_btn, LV_EVENT_CLICKED, NULL);
-
+// mp3 folders list
     lv_obj_t *folders_list = lv_dropdown_create(page);
     lv_dropdown_clear_options(folders_list);
     lv_obj_set_width(folders_list, 200);
-    lv_obj_align(folders_list, LV_ALIGN_TOP_MID, 0, 10 + upgap + delta * i++);  
+    lv_obj_align(folders_list, LV_ALIGN_TOP_MID, 0, 20 + upgap + delta * i++);  
     lv_obj_add_event_cb(folders_list, folders_list_cb, LV_EVENT_VALUE_CHANGED, NULL); 
 
     //populate list
@@ -519,6 +498,29 @@ void ui_clock_setting_page(void)
         lv_dropdown_add_option(folders_list, folder, ix);
     }
     lv_dropdown_set_selected(folders_list, mp3_ix);
+
+// volume slider
+    slider_vol = lv_slider_create(page);
+    label_vol = lv_label_create(page);
+    lv_obj_set_width(slider_vol, 200); 
+    lv_obj_set_size(label_vol, 80, 40);
+    lv_obj_align(slider_vol, LV_ALIGN_TOP_MID, 0, upgap + 50 + delta * i++);     
+    lv_obj_align(label_vol, LV_ALIGN_TOP_LEFT, 0, lv_obj_get_y_aligned(slider_vol));   
+    lv_obj_set_style_text_font(label_vol, &lv_font_montserrat_24, 0);  
+    lv_label_set_text_fmt(label_vol, "%"LV_PRId32, setting_data.music_volume);
+    lv_obj_add_event_cb(slider_vol, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);     /*Assign an event function*/
+    lv_slider_set_value(slider_vol, setting_data.music_volume, LV_ANIM_OFF);
+
+// md button
+    btn_md = lv_btn_create(page);
+    label_md = lv_label_create(btn_md);
+    lv_obj_set_size(btn_md, 200, 40);
+    lv_obj_align(btn_md, LV_ALIGN_TOP_MID, 0, 60 + upgap + delta * i++);  
+    lv_obj_align(label_md, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_style_text_font(label_md, &lv_font_montserrat_24, 0);
+    lv_label_set_text(label_md, (setting_data.md ? "Mundane" : "!Mundane"));
+    lv_obj_add_event_cb(btn_md,event_handler_btn, LV_EVENT_CLICKED, NULL);
+
 }
 
 void user_input(void)

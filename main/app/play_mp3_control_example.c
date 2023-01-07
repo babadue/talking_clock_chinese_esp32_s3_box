@@ -284,18 +284,10 @@ static void mp3_player_listener_task(void *arg)
     (void) arg;
     const int STATS_TICKS = pdMS_TO_TICKS(2 * 1000);
     activate_listener_mp3();
-    while (true) {
-        if (mp3_started)
-        {
+        while (mp3_started) {
             check_mp3_player_event();
         }
-        else
-        {
-
-            break;
-        }
-
-    }
+  
     vTaskDelete(NULL);
 }
 

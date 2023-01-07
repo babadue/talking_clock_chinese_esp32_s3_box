@@ -22,18 +22,6 @@
 
 #include "esp_partition.h"
 
-// int delay_005 = 50;
-// int delay_01 = 100;
-// int delay_02 = 200;
-// int delay_05 = 500;
-// int delay_1 = 1000;
-// int delay_2 = 2000;
-// int delay_3 = 3000;
-// int delay_4 = 4000;
-// int delay_5 = 5000;
-// int delay_6 = 6000;
-// int delay_7 = 7000;
-// int delay_8 = 8000;
 static const char *TAG = "ispeak";
 Book_Keeper_Rec bkr;
 const esp_partition_t* part;

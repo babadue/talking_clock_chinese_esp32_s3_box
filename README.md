@@ -76,9 +76,9 @@ No comment on the Chinese command phrases! &nbsp; These were chosen to adapt to 
 -----
 <br/>
 <p> 
-<img src="https://i.imgur.com/FHnwwc6.jpg" width="33%">
-<img src="https://i.imgur.com/UBk2ir1.jpg" width="33%">
-<img src="https://i.imgur.com/5wdMTSw.jpg" width="33%">
+<img src="https://i.imgur.com/FHnwwc6.jpg" width="32%">
+<img src="https://i.imgur.com/UBk2ir1.jpg" width="32%">
+<img src="https://i.imgur.com/5wdMTSw.jpg" width="32%">
 </p>
 
 https://user-images.githubusercontent.com/116512015/211103816-064f97ce-a421-4015-b901-3b5c4b9a339b.mov

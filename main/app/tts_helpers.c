@@ -31,6 +31,7 @@
 #include "sdmmc_cmd.h"
 #include "bsp_i2c.h"
 #include "bsp_storage.h"
+#include "rom/gpio.h"
 
 #include "esp32_s3_box_board.h"
 

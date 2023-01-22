@@ -698,8 +698,8 @@ esp_err_t adf_es8311_codec_set_voice_volume(int volume)
     uint8_t reg = 0;
     reg = audio_codec_get_dac_reg_value(dac_vol_handle, volume);
     res = adf_es8311_write_reg(ES8311_DAC_REG32, reg);
-    ESP_LOGD(TAG, "Set volume:%.2d reg_value:0x%.2x dB:%.1f", dac_vol_handle->user_volume, reg,
-            audio_codec_cal_dac_volume(dac_vol_handle));
+    // ESP_LOGD(TAG, "Set volume:%.2d reg_value:0x%.2x dB:%.1f", dac_vol_handle->user_volume, reg,
+    //         audio_codec_cal_dac_volume(dac_vol_handle));
     return res;
 }
 
@@ -753,6 +753,6 @@ void adf_es8311_read_all()
 {
     for (int i = 0; i < 0x4A; i++) {
         uint8_t reg = adf_es8311_read_reg(i);
-        ets_printf("REG:%02x, %02x\n", reg, i);
+        // ets_printf("REG:%02x, %02x\n", reg, i);
     }
 }

@@ -93,7 +93,7 @@ static esp_err_t tas5805m_transmit_registers(const tas5805m_cfg_reg_t *conf_buf,
                 // Used in legacy applications.  Ignored here.
                 break;
             case CFG_META_DELAY:
-                vTaskDelay(conf_buf[i].value / portTICK_RATE_MS);
+                vTaskDelay(conf_buf[i].value / portTICK_PERIOD_MS);
                 break;
             case CFG_META_BURST:
                 ret = adf_i2c_bus_write_bytes(i2c_handler, TAS5805M_ADDR, (unsigned char *)(&conf_buf[i + 1].offset), 1, (unsigned char *)(&conf_buf[i + 1].value), conf_buf[i].value);
@@ -128,9 +128,9 @@ esp_err_t tas5805m_init(audio_hal_codec_config_t *codec_cfg)
     io_conf.intr_type = GPIO_INTR_DISABLE;
     gpio_config(&io_conf);
     gpio_set_level(TAS5805M_RST_GPIO, 0);
-    vTaskDelay(20 / portTICK_RATE_MS);
+    vTaskDelay(20 / portTICK_PERIOD_MS);
     gpio_set_level(TAS5805M_RST_GPIO, 1);
-    vTaskDelay(200 / portTICK_RATE_MS);
+    vTaskDelay(200 / portTICK_PERIOD_MS);
 
     ret = get_i2c_pins(I2C_NUM_0, &i2c_cfg);
     i2c_handler = adf_i2c_bus_create(I2C_NUM_0, &i2c_cfg);
@@ -173,8 +173,8 @@ esp_err_t tas5805m_set_volume(int volume)
 
     ret = adf_i2c_bus_write_bytes(i2c_handler, TAS5805M_ADDR, &cmd[0], 1, &cmd[1], 1);
 
-    ESP_LOGD(TAG, "Set volume:%.2d reg_value:0x%.2x dB:%.1f", dac_vol_handle->user_volume, reg,
-            audio_codec_cal_dac_volume(dac_vol_handle));
+    // ESP_LOGD(TAG, "Set volume:%.2d reg_value:0x%.2x dB:%.1f", dac_vol_handle->user_volume, reg,
+    //         audio_codec_cal_dac_volume(dac_vol_handle));
     return ret;
 }
 

@@ -11,7 +11,7 @@
 #include "settingsdotcom.h"
 
 static const char *TAG = "book_keeper";
-Book_Keeper_Rec bkr; 
+// Book_Keeper_Rec bkr; 
 
 void print_current_bkr()
 {
@@ -47,9 +47,9 @@ int book_keeper_ww()
     }
     time_t current_t;
     time(&current_t);
-    ESP_LOGI(TAG, "book_keeper current_t: %ld", current_t);
+    ESP_LOGI(TAG, "book_keeper current_t: %lld", current_t);
     long diff_t = difftime(current_t, bkr.inner.time_previous);
-    ESP_LOGI(TAG, "book_keeper current_t: %ld inner.time.previous: %ld diff: %ld", current_t, bkr.inner.time_previous, diff_t);
+    ESP_LOGI(TAG, "book_keeper current_t: %lld inner.time.previous: %ld diff: %ld", current_t, bkr.inner.time_previous, diff_t);
     bkr.inner.time_previous = current_t;
 
     if (diff_t <= bkr.inner.time_threshold)
@@ -80,7 +80,7 @@ int book_keeper_ww()
         bkr.outer1.score = 0;
         bkr.outer1.count = 0;
     }
-    ESP_LOGI(TAG, "book_keeper current_t: %ld outer1.time.previous: %ld diff: %ld", current_t, bkr.outer1.time_previous, diff_t);
+    // ESP_LOGI(TAG, "book_keeper current_t: %ld outer1.time.previous: %ld diff: %ld", current_t, bkr.outer1.time_previous, diff_t);
 
     print_current_bkr();
 

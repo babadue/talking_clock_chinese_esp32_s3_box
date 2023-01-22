@@ -1,8 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "esp_log.h"
 #include "settingsdotcom.h"
+#include "helpers.h"
+
+int temp_sensor_gpio = 38;
+// Setting_Info setting_data;
+int    volume_steps = 3;
+bool    is_mp3_running = false;
+int    mp3_player_event_timer = 10;
+char mp3_folder[20] = "";
+int mp3_ix = 0;
+
+bool clock_setting = false;
+
+Setting_Info setting_data =
+    {
+        .md = false,
+        .voice_volume = 75,
+        .music_volume = 60
+    };
+
 static const char *TAG = "settingsdotcom";
 const char *mp3_folders[] = {"folder1", "folder2", "folder3", "folder4", "folder5"};
 

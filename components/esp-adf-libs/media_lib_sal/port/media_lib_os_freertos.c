@@ -116,7 +116,7 @@ static int _thread_create(media_lib_thread_handle_t *handle, const char *name,
                                                .ulParameters = 0x00,
                                            }}};
         if (xTaskCreateRestrictedPinnedToCore(
-                &xRegParameters, (xTaskHandle *)handle, core) != pdPASS) {
+                &xRegParameters, (TaskHandle_t *)handle, core) != pdPASS) {
             ESP_LOGE(TAG, "Error creating RestrictedPinnedToCore %s", name);
             break;
         }
@@ -133,7 +133,7 @@ static int _thread_create(media_lib_thread_handle_t *handle, const char *name,
                           int prio, int core)
 {
     if (xTaskCreatePinnedToCore(body, name, stack_size, arg, prio,
-                                (xTaskHandle *)handle, core) != pdPASS) {
+                                (TaskHandle_t *)handle, core) != pdPASS) {
         ESP_LOGE(TAG, "Fail to create thread %s\n", name);
         return ESP_FAIL;
     }
@@ -144,18 +144,18 @@ static int _thread_create(media_lib_thread_handle_t *handle, const char *name,
 static void _thread_destroy(media_lib_thread_handle_t handle)
 {
     // allow NULL to destroy self
-    vTaskDelete((xTaskHandle)handle);
+    vTaskDelete((TaskHandle_t)handle);
 }
 
 static bool _thread_set_priority(media_lib_thread_handle_t handle, int prio)
 {
-    vTaskPrioritySet((xTaskHandle)handle, prio);
+    vTaskPrioritySet((TaskHandle_t)handle, prio);
     return true;
 }
 
 static void _thread_sleep(uint32_t ms)
 {
-    vTaskDelay(ms / portTICK_RATE_MS);
+    vTaskDelay(ms / portTICK_PERIOD_MS);
 }
 
 static int _sema_create(media_lib_sema_handle_t *sema)

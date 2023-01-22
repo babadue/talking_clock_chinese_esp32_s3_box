@@ -24,8 +24,8 @@
 
 #include "esp_peripherals.h"
 #include "periph_sdcard.h"
-#include "periph_touch.h"
-#include "periph_adc_button.h"
+// #include "periph_touch.h"
+// #include "periph_adc_button.h"
 #include "board.h"
 
 #include "sdcard_list.h"
@@ -34,8 +34,11 @@
 #include "lvgl/lvgl.h"
 #include "settingsdotcom.h"
 #include "tts_helpers.h"
+#include "esp_event.h"
+// #include "protocol_examples_common.h"
 
-int time_to_check_mp3; 
+
+// int time_to_check_mp3; 
 static void mp3_player_event(void);
 static const char *TAG = "SDCARD_MP3_CONTROL_EXAMPLE";
 int core = 1;
@@ -51,7 +54,7 @@ char *url = NULL;
 char *sdcard = "/sdcard";
 
 static TaskHandle_t g_lvgl_task_handle;
-SemaphoreHandle_t g_guisemaphore;
+// SemaphoreHandle_t g_guisemaphore;
 void ui_acquire(void);
 void ui_release(void);
 audio_element_state_t mp3_player_state();
@@ -70,6 +73,7 @@ void get_mp3_playlist()
 {
     char sdcard_path[40] = "";
     strcpy(sdcard_path, sdcard);
+    // list_dir(sdcard_path);
     strcat(sdcard_path, mp3_folder);
     // ESP_LOGI(TAG, "pmp3_sdcard sdcard_path: %s", sdcard_path);
     // list_dir(sdcard_path);
@@ -107,15 +111,19 @@ static void get_new_mp3_list_task(void *arg)
         get_new_mp3_list_now();
         break;
     }
-
+    ESP_LOGI(TAG, "get_new_mp3_list_task b4 vtaskdelete");
     vTaskDelete(NULL);
 }
 
 // start task
 void get_new_mp3_list(void)
 {
-    BaseType_t ret_val = xTaskCreatePinnedToCore(get_new_mp3_list_task, "get mp3 Task", 4 * 1024, NULL, 5, NULL, 0);
+    // BaseType_t ret_val = xTaskCreatePinnedToCore(get_new_mp3_list_task, "get mp3 Task", 4 * 1024, NULL, 5, NULL, 0);
+    BaseType_t ret_val = xTaskCreatePinnedToCore(get_new_mp3_list_task, "get mp3 Task", 4 * 1024, NULL, 5, NULL, 0);  //11423
     ESP_ERROR_CHECK_WITHOUT_ABORT((pdPASS == ret_val) ? ESP_OK : ESP_FAIL);
+
+    // get_new_mp3_list_now();
+    // get_mp3_playlist();
 }
 
 void init_pmp3(void)
@@ -317,7 +325,7 @@ static void play_mp3_task(void *arg)
         audio_pipeline_change_state(pipeline, AEL_STATE_INIT);
         set_voice_volume(setting_data.music_volume);  
         audio_pipeline_run(pipeline);
-        time_to_check_mp3 = 0;
+        // time_to_check_mp3 = 0;
         start_mp3player_listener_task();
         break;
     }
@@ -327,6 +335,11 @@ static void play_mp3_task(void *arg)
 void play_mp3()
 {
     ESP_LOGW(TAG, "play_mp3");
+    // ESP_ERROR_CHECK(esp_event_loop_delete_default());  //11423
+    // example_disconnect();
+    // list_dir("/sdcard/mp3");
+    // list_dir("/sdcard/mp3");
+
     is_mp3_running = true;
     mp3_started = true;
     BaseType_t ret_val = xTaskCreatePinnedToCore(play_mp3_task, "play mp3 Task", 4 * 1024, NULL, 5, NULL, 1);

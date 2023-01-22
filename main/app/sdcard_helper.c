@@ -5,7 +5,7 @@
 
 void list_dir(char mount_point[])
 {
-    printf("list_dir\n");
+    printf("list_dir mount_point:%s\n", mount_point);
 
       //read direct
     DIR *p_dir = NULL;

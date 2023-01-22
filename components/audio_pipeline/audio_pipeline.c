@@ -66,7 +66,7 @@ struct audio_pipeline {
     audio_element_list_t        el_list;
     ringbuf_list_t              rb_list;
     audio_element_state_t       state;
-    xSemaphoreHandle            lock;
+    SemaphoreHandle_t            lock;
     bool                        linked;
     audio_event_iface_handle_t  listener;
 };
@@ -315,10 +315,10 @@ esp_err_t audio_pipeline_resume(audio_pipeline_handle_t pipeline)
             continue;
         }
         if (wait_first_el) {
-            ret |= audio_element_resume(el_item->el, 0, 2000 / portTICK_RATE_MS);
+            ret |= audio_element_resume(el_item->el, 0, 2000 / portTICK_PERIOD_MS);
             wait_first_el = false;
         } else {
-            ret |= audio_element_resume(el_item->el, 0, 2000 / portTICK_RATE_MS);
+            ret |= audio_element_resume(el_item->el, 0, 2000 / portTICK_PERIOD_MS);
         }
     }
     audio_pipeline_change_state(pipeline, AEL_STATE_RUNNING);
@@ -386,7 +386,7 @@ esp_err_t audio_pipeline_terminate_with_ticks(audio_pipeline_handle_t pipeline, 
 {
     audio_element_item_t *el_item;
     esp_err_t ret = ESP_OK;
-    ESP_LOGD(TAG, "Destroy audio_pipeline elements with ticks[%d]", ticks_to_wait);
+    // ESP_LOGD(TAG, "Destroy audio_pipeline elements with ticks[%d]", ticks_to_wait);
     STAILQ_FOREACH(el_item, &pipeline->el_list, next) {
         if (el_item->linked) {
             ret |= audio_element_terminate_with_ticks(el_item->el, ticks_to_wait);

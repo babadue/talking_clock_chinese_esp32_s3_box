@@ -46,7 +46,7 @@ typedef struct playlist_info {
 struct playlist_handle {
     uint8_t list_num;                                           /*!< The number of all the playlists in the handle */
     playlist_info_t *cur_playlist;                              /*!< Pointer of current playlist */
-    xSemaphoreHandle playlist_operate_lock;                     /*!< A semaphore of operations */
+    SemaphoreHandle_t playlist_operate_lock;                     /*!< A semaphore of operations */
     STAILQ_HEAD(list_info, playlist_info) playlist_info_list;   /*!< List head of playlists */
 };
 

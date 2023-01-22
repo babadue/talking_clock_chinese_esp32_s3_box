@@ -39,14 +39,14 @@
 #define HP_DELAY_TIME_MS       1000
 
 static char *TAG = "HEADPHONE";
-static xTimerHandle timer_headphone;
+static TimerHandle_t timer_headphone;
 
 static void hp_timer_cb(TimerHandle_t xTimer)
 {
     int num = (int)pvTimerGetTimerID(xTimer);
     int res = gpio_get_level(num);
     es8388_pa_power(res);
-    ets_printf("Headphone jack %s\n", res ? "removed" : "inserted");
+    // ets_printf("Headphone jack %s\n", res ? "removed" : "inserted");
 }
 
 static int hp_timer_init(int num)

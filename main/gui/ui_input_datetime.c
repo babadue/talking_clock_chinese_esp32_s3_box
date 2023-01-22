@@ -15,16 +15,13 @@
 #include "helpers.h"
 #include "setdatetime.h"
 
-#include "lv_examples.h"
+// #include "lv_examples.h"
 #include "ispeak.h"
 #include "ui_input_datetime.h"
 #include "clock_ui.h"
 #include "settingsdotcom.h"
 #include "tts_helpers.h"
 #include "play_mp3_control_example.h"
-
-
-bool clock_setting;
 
 static const char *TAG = "ui_input_datetime";
 void ui_clock_setting_page(void);
@@ -69,27 +66,8 @@ static lv_obj_t *slider_vol;
 static lv_obj_t * label_vol;
 
 static TaskHandle_t g_lvgl_task_handle;
-SemaphoreHandle_t g_guisemaphore;
 
 LV_FONT_DECLARE(lv_font_digits_90b4);
-
-static void lvgl_task(void *pvParam)
-{
-    (void) pvParam;
-    g_guisemaphore = xSemaphoreCreateMutex();
-
-    do {
-        /* Try to take the semaphore, call lvgl related function on success */
-        if (pdTRUE == xSemaphoreTake(g_guisemaphore, portMAX_DELAY)) {
-            lv_task_handler();
-            xSemaphoreGive(g_guisemaphore);
-        }
-        vTaskDelay(pdMS_TO_TICKS(10));
-
-    } while (true);
-
-    vTaskDelete(NULL);
-}
 
 static void event_handler_btn(lv_event_t *event)
 {
@@ -196,14 +174,19 @@ static void event_handler_btn(lv_event_t *event)
         {
             if (datevalid(time_data.day, time_data.mon, time_data.year))
             {
+                // print_time_data(time_data);
                 setme_datetime(time_data);
+                time_data = get_clock_time11();
+                ESP_LOGI(TAG,"event_handler_btn done read time_data again after settme_datetime");
+                // print_time_data(time_data);
                 lv_obj_t *obj = lv_event_get_user_data(event);
                 lv_obj_del(obj);
                 clock_setting = false;
                 activate_board_btns();
 
             }
-            else{
+            else
+            {
                 lv_obj_set_style_text_color(label_day, lv_color_hex(0xff0000), 0);
             }
 
@@ -253,6 +236,7 @@ static void folders_list_cb(lv_event_t *event)
 
 void ui_clock_setting_page(void)
 {
+    // esp_log_level_set("ui_input_datetime", ESP_LOG_NONE);
     int delta = 45;
     int upgap = 0;
     int i = 0;
@@ -318,7 +302,7 @@ void ui_clock_setting_page(void)
 
     lv_obj_align(label_lb, LV_ALIGN_CENTER, 0, 0);
     lv_obj_align(label_rb, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_style_text_font(label_lb, &lv_font_montserrat_40, 0);
+    lv_obj_set_style_text_font(label_lb, &lv_font_montserrat_40, 0);  //40
     lv_obj_set_style_text_font(label_rb, &lv_font_montserrat_40, 0);
     lv_label_set_text(label_lb, "-");
     lv_label_set_text(label_rb, "+");
@@ -330,7 +314,7 @@ void ui_clock_setting_page(void)
     tostring(hrs_str, time_data.hour);
     ESP_LOGI(TAG, "ui_clock_setting_page hours: %s", hrs_str);
     lv_label_set_text(label_hour, hrs_str);
-    lv_obj_set_style_text_font(label_hour, &lv_font_montserrat_40, 0);
+    lv_obj_set_style_text_font(label_hour, &lv_font_montserrat_40, 0);  //40
     lv_obj_add_event_cb(lbtn_hour, event_handler_btn, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(rbtn_hour, event_handler_btn, LV_EVENT_CLICKED, NULL);
 
@@ -485,7 +469,7 @@ void ui_clock_setting_page(void)
     lv_obj_t *folders_list = lv_dropdown_create(page);
     lv_dropdown_clear_options(folders_list);
     lv_obj_set_width(folders_list, 200);
-    lv_obj_align(folders_list, LV_ALIGN_TOP_MID, 0, 20 + upgap + delta * i++);  
+    lv_obj_align(folders_list, LV_ALIGN_TOP_RIGHT, 0, 20 + upgap + delta * i++);  
     lv_obj_add_event_cb(folders_list, folders_list_cb, LV_EVENT_VALUE_CHANGED, NULL); 
 
     //populate list
@@ -502,12 +486,12 @@ void ui_clock_setting_page(void)
 // volume slider
     slider_vol = lv_slider_create(page);
     label_vol = lv_label_create(page);
-    lv_obj_set_width(slider_vol, 200); 
-    lv_obj_set_size(label_vol, 80, 40);
-    lv_obj_align(slider_vol, LV_ALIGN_TOP_MID, 0, upgap + 50 + delta * i++);     
-    lv_obj_align(label_vol, LV_ALIGN_TOP_LEFT, 0, lv_obj_get_y_aligned(slider_vol));   
+    lv_obj_set_width(slider_vol, 160); 
+    lv_obj_set_size(label_vol, 60, 40);
+    lv_obj_align(slider_vol, LV_ALIGN_TOP_RIGHT, 0, upgap + 50 + delta * i++);     
+    lv_obj_align(label_vol, LV_ALIGN_TOP_LEFT, 95, lv_obj_get_y_aligned(slider_vol) -7);   
     lv_obj_set_style_text_font(label_vol, &lv_font_montserrat_24, 0);  
-    lv_label_set_text_fmt(label_vol, "%"LV_PRId32, setting_data.music_volume);
+    lv_label_set_text_fmt(label_vol, "%"LV_PRId32, (int32_t)setting_data.music_volume);
     lv_obj_add_event_cb(slider_vol, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);     /*Assign an event function*/
     lv_slider_set_value(slider_vol, setting_data.music_volume, LV_ANIM_OFF);
 
@@ -515,7 +499,7 @@ void ui_clock_setting_page(void)
     btn_md = lv_btn_create(page);
     label_md = lv_label_create(btn_md);
     lv_obj_set_size(btn_md, 200, 40);
-    lv_obj_align(btn_md, LV_ALIGN_TOP_MID, 0, 60 + upgap + delta * i++);  
+    lv_obj_align(btn_md, LV_ALIGN_TOP_RIGHT, 0, 60 + upgap + delta * i++);  
     lv_obj_align(label_md, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_text_font(label_md, &lv_font_montserrat_24, 0);
     lv_label_set_text(label_md, (setting_data.md ? "Mundane" : "!Mundane"));

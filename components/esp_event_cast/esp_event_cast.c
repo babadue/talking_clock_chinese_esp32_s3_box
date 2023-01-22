@@ -43,7 +43,7 @@ typedef struct esp_evt_cast_item {
 typedef STAILQ_HEAD(esp_event_cast_list, esp_evt_cast_item) esp_event_cast_list_t;
 
 typedef struct esp_event_cast {
-    xSemaphoreHandle        _mux;
+    SemaphoreHandle_t        _mux;
     esp_event_cast_list_t   evt_list;
 } esp_event_cast_t;
 

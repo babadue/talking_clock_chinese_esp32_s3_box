@@ -231,8 +231,8 @@ esp_err_t adf_es8156_codec_set_voice_volume(int volume)
     uint8_t reg = 0;
     reg = audio_codec_get_dac_reg_value(dac_vol_handle, volume);
     ret = adf_es8156_write_reg(ES8156_VOLUME_CONTROL_REG14, reg);
-    ESP_LOGD(TAG, "Set volume:%.2d reg_value:0x%.2x dB:%.1f", dac_vol_handle->user_volume, reg,
-            audio_codec_cal_dac_volume(dac_vol_handle));
+    // ESP_LOGD(TAG, "Set volume:%.2d reg_value:0x%.2x dB:%.1f", dac_vol_handle->user_volume, reg,
+    //         audio_codec_cal_dac_volume(dac_vol_handle));
     return ret;
 }
 

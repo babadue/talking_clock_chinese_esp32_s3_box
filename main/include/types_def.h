@@ -1,7 +1,8 @@
 #pragma once
+// #include <stdbool.h>
     typedef struct time_info 
     {
-        bool am;
+        _Bool am;
         int hour;
         int min;
         int day;
@@ -12,10 +13,16 @@
 
     typedef struct setting_info
     {
-        bool md;
+        _Bool md;
         int voice_volume;
         int music_volume;
     } Setting_Info;
+
+    // typedef struct test_st
+    // {
+    //     int d;
+    //     int b;
+    // }Test_St;
 
     // typedef struct date_written_cn
     // {

@@ -21,6 +21,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+#include "freertos/FreeRTOS.h"
+// #include "freertos/task.h"
 
 #ifndef __ESP_EVENT_CAST_H__
 #define __ESP_EVENT_CAST_H__

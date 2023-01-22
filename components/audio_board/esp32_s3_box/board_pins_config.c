@@ -46,23 +46,23 @@ esp_err_t get_i2c_pins(i2c_port_t port, i2c_config_t *i2c_config)
     return ESP_OK;
 }
 
-esp_err_t get_i2s_pins(i2s_port_t port, i2s_pin_config_t *i2s_config)
+esp_err_t get_i2s_pins(i2s_port_t port, i2s_std_gpio_config_t *i2s_config)
 {
     AUDIO_NULL_CHECK(TAG, i2s_config, return ESP_FAIL);
     if (port == I2S_NUM_0) {
-        i2s_config->bck_io_num = GPIO_NUM_17;
-        i2s_config->ws_io_num = GPIO_NUM_47;
-        i2s_config->data_out_num = GPIO_NUM_15;
-        i2s_config->data_in_num = GPIO_NUM_16;
-        i2s_config->mck_io_num = GPIO_NUM_2;
+        i2s_config->bclk = GPIO_NUM_17;
+        i2s_config->ws = GPIO_NUM_47;
+        i2s_config->dout = GPIO_NUM_15;
+        i2s_config->din = GPIO_NUM_16;
+        i2s_config->mclk = GPIO_NUM_2;
     } else if (port == I2S_NUM_1) {
-        i2s_config->bck_io_num = -1;
-        i2s_config->ws_io_num = -1;
-        i2s_config->data_out_num = -1;
-        i2s_config->data_in_num = -1;
-        i2s_config->mck_io_num = -1;
+        i2s_config->bclk = -1;
+        i2s_config->ws = -1;
+        i2s_config->dout = -1;
+        i2s_config->din = -1;
+        i2s_config->mclk = -1;
     } else {
-        memset(i2s_config, -1, sizeof(i2s_pin_config_t));
+        memset(i2s_config, -1, sizeof(i2s_std_gpio_config_t));
         ESP_LOGE(TAG, "i2s port %d is not supported", port);
         return ESP_FAIL;
     }
@@ -89,7 +89,7 @@ esp_err_t get_spi_pins(spi_bus_config_t *spi_config, spi_device_interface_config
 
 esp_err_t i2s_mclk_gpio_select(i2s_port_t i2s_num, gpio_num_t gpio_num)
 {
-    if (i2s_num >= I2S_NUM_MAX) {
+    if (i2s_num >= I2C_NUM_MAX) {
         ESP_LOGE(TAG, "Does not support i2s number(%d)", i2s_num);
         return ESP_ERR_INVALID_ARG;
     }

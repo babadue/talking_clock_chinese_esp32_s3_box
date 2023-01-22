@@ -25,17 +25,16 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "driver/gpio.h"
+#include "rom/ets_sys.h"
 
 #include "DHT22.h"
+#include "helpers.h"
 
 // == global defines =============================================
 
 static const char* TAG = "DHT";
 
 int DHTgpio;				
-float humidity = 0.;
-float temperature = 0.;
-
 // == set the DHT used pin=========================================
 
 void setDHTgpio( int gpio )

@@ -75,7 +75,7 @@ typedef struct esp_periph *esp_periph_handle_t;
 typedef esp_err_t (*esp_periph_func)(esp_periph_handle_t periph);
 typedef esp_err_t (*esp_periph_run_func)(esp_periph_handle_t periph, audio_event_iface_msg_t *msg);
 typedef esp_err_t (*esp_periph_event_handle_t)(audio_event_iface_msg_t *event, void *context);
-typedef void (*timer_callback)(xTimerHandle tmr);
+typedef void (*timer_callback)(TimerHandle_t tmr);
 
 /**
  * @brief Common peripherals configurations

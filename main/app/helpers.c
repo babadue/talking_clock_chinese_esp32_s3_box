@@ -6,6 +6,27 @@
 #include "helpers.h"
 #include <time.h>
 #include <sys/time.h>
+#include <stdbool.h>
+
+char dateCN_string[30] = "";
+char string[30] = "";
+float humidity = 0.;
+float temperature = 0.;
+Book_Keeper_Rec bkr = 
+{
+    .inner = {  .time_threshold = 0,
+                .time_previous = 0,
+                .score = 0,
+                .count = 0,
+                .count_threshold = 0
+            },
+    .outer1 = { .time_threshold = 0,
+                .time_previous = 0,
+                .score = 0,
+                .count = 0,
+                .count_threshold = 0
+            }
+};
 
 const char *hrcn = "点";
 const char *mincn = "分";
@@ -23,6 +44,18 @@ static char *comma= ",";
 void tostring(char str[], int num);
 int toint(char []);
 static const char *TAG = "helpers";
+
+void print_time_data(TM_Data time_data)
+{
+    ESP_LOGI(TAG,"-----------print_time_data-----------");
+    ESP_LOGI(TAG,"print_time_data time_data.min: %d", time_data.min);
+    ESP_LOGI(TAG,"print_time_data time_data.hour: %d", time_data.hour); 
+    ESP_LOGI(TAG,"print_time_data time_data.day: %d", time_data.day); 
+    ESP_LOGI(TAG,"print_time_data time_data.mon: %d", time_data.mon); 
+    ESP_LOGI(TAG,"print_time_data time_data.year: %d", time_data.year); 
+    ESP_LOGI(TAG,"print_time_data time_data.wday: %d", time_data.wday);     
+    ESP_LOGI(TAG,"print_time_data time_data.am: %d", time_data.am); 
+}
  
 void tostring(char str[], int num)
 {

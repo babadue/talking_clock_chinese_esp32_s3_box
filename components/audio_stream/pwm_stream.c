@@ -37,6 +37,8 @@
 #include "soc/ledc_reg.h"
 #include "pwm_stream.h"
 #include "audio_idf_version.h"
+#include "soc/timer_group_struct.h"
+#include "soc/rtc.h"
 
 static const char *TAG = "PWM_STREAM";
 
@@ -113,7 +115,7 @@ static esp_err_t pwm_data_list_destroy(pwm_data_handle_t data)
 static pwm_data_handle_t pwm_data_list_create(int size)
 {
     if (size < (BUFFER_MIN_SIZE << 2)) {
-        ESP_LOGE(TAG, "Invalid buffer size, Minimum = %d", (int32_t)(BUFFER_MIN_SIZE << 2));
+        // ESP_LOGE(TAG, "Invalid buffer size, Minimum = %d", (int32_t)(BUFFER_MIN_SIZE << 2));
         return NULL;
     }
 
@@ -336,9 +338,9 @@ static esp_err_t audio_pwm_init(const audio_pwm_config_t *cfg)
     handle->config = *cfg;
     g_audio_pwm_handle = handle;
     if (cfg->tg_num == TIMER_GROUP_0) {
-        handle->timg_dev = &TIMERG0;
+        handle->timg_dev = TIMER_0;
     } else {
-        handle->timg_dev = &TIMERG1;
+        handle->timg_dev = TIMER_1;
     }
     handle->channel_mask = 0;
     if (handle->config.gpio_num_left >= 0) {
@@ -433,7 +435,7 @@ esp_err_t audio_pwm_set_param(int rate, ledc_timer_bit_t bits, int ch)
 
     timer_init(handle->config.tg_num, handle->config.timer_num, &config);
     timer_set_counter_value(handle->config.tg_num, handle->config.timer_num, 0x00000000ULL);
-    timer_set_alarm_value(handle->config.tg_num, handle->config.timer_num, (TIMER_BASE_CLK / config.divider) / handle->framerate);
+    timer_set_alarm_value(handle->config.tg_num, handle->config.timer_num, (rtc_clk_apb_freq_get() / config.divider) / handle->framerate);
     timer_enable_intr(handle->config.tg_num, handle->config.timer_num);
     timer_isr_register(handle->config.tg_num, handle->config.timer_num, timer_group_isr, NULL, ESP_INTR_FLAG_IRAM, NULL);
     return res;
@@ -462,7 +464,7 @@ esp_err_t audio_pwm_set_sample_rate(int rate)
     div = (uint16_t)handle->timg_dev->hw_timer[handle->config.timer_num].config.tn_divider;
 #endif
 
-    res = timer_set_alarm_value(handle->config.tg_num, handle->config.timer_num, (TIMER_BASE_CLK / div) / handle->framerate);
+    res = timer_set_alarm_value(handle->config.tg_num, handle->config.timer_num, (rtc_clk_apb_freq_get() / div) / handle->framerate);
     return res;
 }
 
@@ -514,7 +516,8 @@ static esp_err_t pwm_data_convert(pwm_data_handle_t data, uint8_t *inbuf, int32_
             }
         }
     } else {
-        ESP_LOGE(TAG, "Only support bits (16 or 32), now bits_per is %d", bits_per);
+        // ESP_LOGE(TAG, "Only support bits (16 or 32), now bits_per is %d", bits_per);
+        ESP_LOGE(TAG, "Only support bits (16 or 32), now bits_per is");
     }
     return ESP_OK;
 }

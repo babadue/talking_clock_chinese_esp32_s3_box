@@ -32,8 +32,6 @@ Others - either were from stackoverflow.com or somewhere out there by googling.
 
 While a great effort has been made to avoid modifying any original components directly and to do it at the frontend as much as possible, some changes have to be done at the backend.
 
-You need to run the `idf_v4.4_freertos.patch`.  &nbsp; It will update two files in the freertos component.  &nbsp; The tasks.c and task.h are included here if you don't want to update it yourself.
-
 If you don't want to compile yourself, the `misc` folder has all bin files readily to be flashed.
 <br/><br/>
 
@@ -66,7 +64,7 @@ No comment on the Chinese command phrases! &nbsp; These were chosen to adapt to 
 
 ## Notes:
 
-* This project was compiled against `idf v4.4.3`. 
+* Updated: This project was compiled against `idf v5.0`. 
 * You will need to manually flash `esp_tts_voice_data_xiaole.dat` at address `0x410000`. &nbsp; This for the Chinese tts. &nbsp;  The file is located in `misc\bin_files`
 * No attempt was made to handle in the absence of MMC sd card and DHT22 hardware.  &nbsp; So if you do not have these two pieces of hardware and you want to use the clock only, then you will need to dig in and take out those related code.
 * This is provided "AS IS" BASIS, WITHOUT WARRANTIES OR
@@ -105,7 +103,9 @@ https://user-images.githubusercontent.com/116512015/211103844-e9f58e44-7333-4885
 
 <br/>
 <br/>
-<br/>
+
+## Full Demo on YouTube
+[![Full Demo on YouTube](https://i.imgur.com/AlJaVJG.png)](https://www.youtube.com/@un_mundane/featured "Full Demo on YouTube")
 
 ## <p align=center>------------------- A !Mundane World -------------------
 

@@ -63,7 +63,8 @@ ELSE()
 ENDIF ()
 
 
-set(COMPONENT_REQUIRES audio_pipeline audio_sal esp-sr nghttp esp-tls)
+# set(COMPONENT_REQUIRES audio_pipeline audio_sal esp-sr nghttp esp-tls)
+set(COMPONENT_REQUIRES audio_pipeline audio_sal esp-sr esp-tls)
 
 register_component()
 

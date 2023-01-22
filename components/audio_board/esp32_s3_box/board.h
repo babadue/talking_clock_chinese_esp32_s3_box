@@ -29,9 +29,9 @@
 #include "board_def.h"
 #include "board_pins_config.h"
 #include "esp_peripherals.h"
-#include "display_service.h"
+// #include "display_service.h"
 #include "periph_sdcard.h"
-#include "periph_lcd.h"
+// #include "periph_lcd.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -78,12 +78,12 @@ audio_hal_handle_t audio_board_adc_init(void);
  */
 void *audio_board_lcd_init(esp_periph_set_handle_t set, void *cb);
 
-/**
- * @brief Initialize led peripheral and display service
- *
- * @return The audio display service handle
- */
-display_service_handle_t audio_board_blue_led_init(void);
+// /**
+//  * @brief Initialize led peripheral and display service
+//  *
+//  * @return The audio display service handle
+//  */
+// display_service_handle_t audio_board_blue_led_init(void);
 
 /**
  * @brief Initialize key peripheral

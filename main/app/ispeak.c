@@ -19,11 +19,11 @@
 #include "play_mp3_control_example.h"
 #include "tts_helpers.h"
 #include "settingsdotcom.h"
-
+#include "spi_flash_mmap.h"
 #include "esp_partition.h"
 
 static const char *TAG = "ispeak";
-Book_Keeper_Rec bkr;
+// Book_Keeper_Rec bkr;
 const esp_partition_t* part;
 static esp_tts_handle_t *tts_handle;
 

@@ -26,7 +26,7 @@
 #include "ui_input_datetime.h"
 #include "helpers.h"
 
-bool clock_setting;
+// bool clock_setting;
 int sr_timeout = 5760;  //5760
 int detect_flag = 0;
 static esp_afe_sr_iface_t *afe_handle = NULL;

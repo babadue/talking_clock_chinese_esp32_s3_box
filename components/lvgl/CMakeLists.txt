@@ -34,7 +34,6 @@ idf_component_register(
         "lvgl/src"
         "lvgl/demos"
         "lv_port"
-        "lvgl/examples"
     REQUIRES
         bsp
         main)

@@ -148,7 +148,6 @@ esp_err_t bsp_codec_detect(uint32_t *devices)
 
 esp_err_t bsp_codec_init(audio_hal_iface_samples_t sample_rate)
 {
-    ESP_LOGE(TAG, "bsp_codec_init bsp");
     esp_err_t ret_val = ESP_OK;
 
     ret_val = bsp_codec_detect(&s_codec_detect_flag);

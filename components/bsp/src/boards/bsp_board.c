@@ -23,7 +23,6 @@ static boards_info_t *g_board = NULL;
 
 static esp_err_t bsp_board_detect()
 {
-    ESP_LOGE(TAG, "bsp_board_detect");
     esp_err_t ret = ESP_OK;
     for (size_t i = 0; i < sizeof(g_boards_info) / sizeof(boards_info_t); i++) {
         const board_res_desc_t *brd = g_boards_info[i].board_get_res_desc();
@@ -61,11 +60,8 @@ const board_res_desc_t *bsp_board_get_description(void)
 
 esp_err_t bsp_board_init(void)
 {
-    ESP_LOGE(TAG, "bsp_board_init");
     if (ESP_OK == bsp_board_detect()) {
-        ESP_LOGE(TAG, "b4 board_init");
         return g_board->board_init();
-        // return ESP_OK;
     }
     return ESP_FAIL;
 }

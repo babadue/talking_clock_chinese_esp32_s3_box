@@ -22,14 +22,16 @@
 #include "play_mp3_control_example.h"
 #include "tts_helpers.h"
 #include "settingsdotcom.h"
+#include "sdcard_helper.h"
 
 static const char *TAG = "main";
 
 void app_main()
 {
+    esp_log_level_set("*", ESP_LOG_NONE);
+    
 // initial some variables
    setting_me();
-    esp_log_level_set("*", ESP_LOG_NONE);
 
     ESP_LOGI(TAG,"-----------app_main started-----------");
    //  ESP_LOGI(TAG, "app_main core id is: %d", xPortGetCoreID());
@@ -37,6 +39,8 @@ void app_main()
 //initial sd card
     pmp3_sdcard();   
 
+
+// initial lcd
     ESP_ERROR_CHECK(bsp_board_init());
     ESP_ERROR_CHECK(bsp_board_power_ctrl(POWER_MODULE_AUDIO, true));
     ESP_ERROR_CHECK(lv_port_init());
@@ -47,7 +51,7 @@ void app_main()
     initializeBoard();
     speech();
 
-// get mp3 files
+// // get mp3 files
     get_new_mp3_list();  
 
 }

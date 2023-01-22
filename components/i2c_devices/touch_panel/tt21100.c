@@ -11,6 +11,7 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "freertos/task.h"
+#include "rom/gpio.h"
 
 #define TT21100_CHIP_ADDR_DEFAULT   (0x24)
 #define TT21100_REG_TP_NUM          (0x1)

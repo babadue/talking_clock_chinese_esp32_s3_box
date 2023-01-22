@@ -29,6 +29,7 @@
 #include "esp_log.h"
 #include "audio_mem.h"
 #include "esp_heap_caps.h"
+// #include "esp_efuse.h"
 #include "esp_efuse.h"
 
 // #define ENABLE_AUDIO_MEM_TRACE
@@ -119,12 +120,12 @@ void *audio_calloc_inner(size_t n, size_t size)
 
 void audio_mem_print(const char *tag, int line, const char *func)
 {
-#ifdef CONFIG_SPIRAM_BOOT_INIT
-    ESP_LOGI(tag, "Func:%s, Line:%d, MEM Total:%d Bytes, Inter:%d Bytes, Dram:%d Bytes\r\n", func, line, esp_get_free_heap_size(),
-             heap_caps_get_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
-#else
-    ESP_LOGI(tag, "Func:%s, Line:%d, MEM Total:%d Bytes\r\n", func, line, esp_get_free_heap_size());
-#endif
+// #ifdef CONFIG_SPIRAM_BOOT_INIT
+//     ESP_LOGI(tag, "Func:%s, Line:%d, MEM Total:%d Bytes, Inter:%d Bytes, Dram:%d Bytes\r\n", func, line, esp_get_free_heap_size(),
+//              heap_caps_get_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
+// #else
+//     ESP_LOGI(tag, "Func:%s, Line:%d, MEM Total:%d Bytes\r\n", func, line, esp_get_free_heap_size());
+// #endif
 }
 
 #if defined (CONFIG_SPIRAM_BOOT_INIT)

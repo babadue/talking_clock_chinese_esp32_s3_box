@@ -1,4 +1,11 @@
 /*
+ * SPDX-FileCopyrightText: 2020 Amazon.com, Inc. or its affiliates
+ *
+ * SPDX-License-Identifier: MIT
+ *
+ * SPDX-FileContributor: 2016-2022 Espressif Systems (Shanghai) CO LTD
+ */
+/*
  * FreeRTOS Kernel V10.4.3
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
@@ -33,9 +40,6 @@
 #endif
 
 #include "list.h"
-#ifdef ESP_PLATFORM // IDF-3793
-#include "freertos/portmacro.h"
-#endif // ESP_PLATFORM
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus
@@ -82,12 +86,9 @@
  * \ingroup Tasks
  */
 struct tskTaskControlBlock;     /* The old naming convention is used to prevent breaking kernel aware debuggers. */
-#ifdef ESP_PLATFORM // IDF-3769
-typedef void* TaskHandle_t;
-#else
-typedef struct tskTaskControlBlock* TaskHandle_t;
-#endif // ESP_PLATFORM
-/**
+typedef struct tskTaskControlBlock * TaskHandle_t;
+
+/*
  * Defines the prototype to which the application task hook function must
  * conform.
  */
@@ -2534,6 +2535,10 @@ BaseType_t xTaskGenericNotify( TaskHandle_t xTaskToNotify,
  * updated.  ulValue is not used and xTaskNotify() always returns pdPASS in
  * this case.
  *
+ * @param pulPreviousNotificationValue -
+ * Can be used to pass out the subject task's notification value before any
+ * bits are modified by the notify function.
+ *
  * @param pxHigherPriorityTaskWoken  xTaskNotifyFromISR() will set
  * *pxHigherPriorityTaskWoken to pdTRUE if sending the notification caused the
  * task to which the notification was sent to leave the Blocked state, and the
@@ -2542,10 +2547,6 @@ BaseType_t xTaskGenericNotify( TaskHandle_t xTaskToNotify,
  * be requested before the interrupt is exited.  How a context switch is
  * requested from an ISR is dependent on the port - see the documentation page
  * for the port in use.
- *
- * @param pulPreviousNotificationValue -
- * Can be used to pass out the subject task's notification value before any
- * bits are modified by the notify function.
  *
  * @return Dependent on the value of eAction.  See the description of the
  * eAction parameter.
@@ -2798,6 +2799,7 @@ BaseType_t xTaskGenericNotifyWait( UBaseType_t uxIndexToWaitOn,
     xTaskGenericNotify( ( xTaskToNotify ), ( uxIndexToNotify ), ( 0 ), eIncrement, NULL )
 #define xTaskNotifyGive( xTaskToNotify ) \
     xTaskGenericNotify( ( xTaskToNotify ), ( tskDEFAULT_INDEX_TO_NOTIFY ), ( 0 ), eIncrement, NULL )
+
 /**
  * @cond !DOC_EXCLUDE_HEADER_SECTION
  * task. h
@@ -3324,8 +3326,24 @@ BaseType_t xTaskGetAffinity( TaskHandle_t xTask ) PRIVILEGED_FUNCTION;
  *     or
  *   + Time slicing is in use and there is a task of equal priority to the
  *     currently running task.
+ *
+ * Note: For SMP, this function must only be called by core 0. Other cores should
+ *       call xTaskIncrementTickOtherCores() instead.
  */
 BaseType_t xTaskIncrementTick( void ) PRIVILEGED_FUNCTION;
+
+#ifdef ESP_PLATFORM
+/*
+ * THIS FUNCTION MUST NOT BE USED FROM APPLICATION CODE.  IT IS ONLY
+ * INTENDED FOR USE WHEN IMPLEMENTING A PORT OF THE SCHEDULER AND IS
+ * AN INTERFACE WHICH IS FOR THE EXCLUSIVE USE OF THE SCHEDULER.
+ *
+ * Called from all other cores except core 0 when their tick interrupt
+ * occurs. This function will check if the current core requires time slicing,
+ * and also call the application tick hook.
+ */
+BaseType_t xTaskIncrementTickOtherCores( void ) PRIVILEGED_FUNCTION;
+#endif // ESP_PLATFORM
 
 /*
  * THIS FUNCTION MUST NOT BE USED FROM APPLICATION CODE.  IT IS AN
@@ -3532,10 +3550,6 @@ TaskHandle_t pvTaskIncrementMutexHeldCount( void ) PRIVILEGED_FUNCTION;
  */
 void vTaskInternalSetTimeOutState( TimeOut_t * const pxTimeOut ) PRIVILEGED_FUNCTION;
 
-#ifdef ESP_PLATFORM
-/* TODO: IDF-3683 */
-#include "freertos/task_snapshot.h"
-#endif // ESP_PLATFORM
 
 /** @endcond */
 

@@ -117,7 +117,7 @@ typedef struct {
     int sonic_num;
     audio_forge_stop_mode_t stop_mode;
     int status;
-    xSemaphoreHandle lock; 
+    SemaphoreHandle_t lock; 
 #ifdef AUDIO_FORGE_SPEED_ANALYSIS
     codec_tick_handle_t *audio_forge_tick_handle;
 #endif

@@ -8,7 +8,7 @@
 #include "bsp_board.h"
 #include "bsp_i2s.h"
 #include "bsp_codec.h"
-#include "button.h"
+#include "iot_button.h"
 #include "bsp_btn.h"
 
 static const board_button_t g_btns[] = {
@@ -42,7 +42,6 @@ static const board_res_desc_t g_board_s3_box_res = {
     .LCD_MIRROR_X =    (true),
     .LCD_MIRROR_Y =    (true),
     .LCD_COLOR_INV =   (false),
-    .LCD_COLOR_SPACE = ESP_LCD_COLOR_SPACE_BGR,
 
     .GPIO_LCD_BL =     (GPIO_NUM_45),
     .GPIO_LCD_BL_ON =  (1),
@@ -123,15 +122,14 @@ static const char *TAG = "board";
 __attribute__((weak)) void mute_btn_handler(void *arg)
 {
     if (g_board_s3_box_res.GPIO_MUTE_LEVEL == gpio_get_level(g_board_s3_box_res.GPIO_MUTE_NUM)) {
-        ets_printf(DRAM_STR("Mute Off"));
+        esp_rom_printf(DRAM_STR("Mute Off"));
     } else {
-        ets_printf(DRAM_STR("Mute On"));
+        esp_rom_printf(DRAM_STR("Mute On"));
     }
 }
 
 esp_err_t bsp_board_s3_box_init(void)
 {
-    ESP_LOGE(TAG, "bsp_board_s3_box_init");
     /*!< Mute_Button on ESP32-S3-Box */
     gpio_config_t io_conf_key;
     io_conf_key.intr_type = GPIO_INTR_ANYEDGE;
@@ -154,7 +152,6 @@ esp_err_t bsp_board_s3_box_init(void)
      *       `MP3GetLastFrameInfo` can fill the `MP3FrameInfo`, which includes `samprate`.
      *       So theoretically, the sampling rate can be dynamically changed according to the MP3 frame information.
      */
-    // ESP_LOGE(TAG, "bsp_board_s3_box_init b4 i2s init");
     // ESP_ERROR_CHECK(bsp_i2s_init(I2S_NUM_0, 16000));
     // ESP_ERROR_CHECK(bsp_codec_init(AUDIO_HAL_16K_SAMPLES));
 

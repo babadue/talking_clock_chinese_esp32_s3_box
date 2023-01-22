@@ -19,6 +19,7 @@
 #include "bsp_i2c.h"
 #include "Message.h"
 #include "inv_imu_driver.h"
+#include "rom/ets_sys.h"
 
 static const char *TAG = "icm42670";
 

@@ -14,14 +14,15 @@
 #include "play_mp3_control_example.h"
 #include "settingsdotcom.h"
 
-int time_to_check_mp3 = 01;
-bool clock_setting = false;
+// int time_to_check_mp3 = 01;
+// bool clock_setting = false;
 int time_to_read_temp = 01;
 // static int temp_sensor_gpio = 38;  // this is the one that is being used
 
 static const char *TAG = "clock_ui";
 
-LV_FONT_DECLARE(numbers_font_90_4bo);
+LV_FONT_DECLARE(number_font_90_4bo);
+LV_FONT_DECLARE(sim_font_cn1000an_20);
 
 static TaskHandle_t g_lvgl_task_handle;
 
@@ -79,8 +80,23 @@ void ui_release(void)
     }
 }
 
+static void print_time_info(struct tm timeinfo)
+{
+    ESP_LOGI(TAG,"-----------print_time_info-----------");
+    ESP_LOGI(TAG,"print_time_data timeinfo.min: %d", timeinfo.tm_min);
+    ESP_LOGI(TAG,"print_time_data timeinfo.hour: %d", timeinfo.tm_hour); 
+    // ESP_LOGI(TAG,"print_time_data timeinfo.day: %d", timeinfo.tm_da); 
+    // ESP_LOGI(TAG,"print_time_data timeinfo.mon: %d", time_data.mon); 
+    // ESP_LOGI(TAG,"print_time_data timeinfo.year: %d", time_data.year); 
+    // ESP_LOGI(TAG,"print_time_data timeinfo.wday: %d", time_data.wday);     
+    // ESP_LOGI(TAG,"print_time_data timeinfo.am: %d", time_data.am); 
+}
+
 static void clock_run_cb(lv_timer_t *timer)
 {
+    ESP_LOGI(TAG,"clock_run_cb ");
+    TM_Data time_data = get_clock_time11();
+    // print_time_data(time_data);
     char s[100];
     int rc;
     struct myclock_ui *elements;
@@ -98,7 +114,8 @@ static void clock_run_cb(lv_timer_t *timer)
     setenv("TZ", "CST-8", 1);
     tzset();
     localtime_r(&now, &timeinfo);
-    lv_label_set_text_fmt(lab_time, "%02u:%02u", ((timeinfo.tm_hour > 12) ? (timeinfo.tm_hour-12) : ((timeinfo.tm_hour == 0) ? 12 : timeinfo.tm_hour)), timeinfo.tm_min);
+    // print_time_info(timeinfo);
+    lv_label_set_text_fmt(lab_time, "%02u:%02u", ((timeinfo.tm_hour > 12) ? (timeinfo.tm_hour-12) : ((timeinfo.tm_hour == 0) ? 12 : timeinfo.tm_hour)), time_data.min);
     rc = strftime(s,sizeof(s),"%A, %B %d %Y", &timeinfo);
     lv_label_set_text(lab_date, s);
     lv_label_set_text(lab_ampm, (timeinfo.tm_hour >= 12) ? "PM" : "AM");
@@ -123,6 +140,8 @@ static void clock_run_cb(lv_timer_t *timer)
 
 void ui_clock_display(void)
 {
+    esp_log_level_set("clock_ui", ESP_LOG_NONE);
+    ESP_LOGI(TAG,"ui_clock_display ");
     const board_res_desc_t *brd = bsp_board_get_description();
     BaseType_t ret_val = xTaskCreatePinnedToCore(lvgl_task, "lvgl_Task", 6 * 1024, NULL, configMAX_PRIORITIES - 3, &g_lvgl_task_handle, 0);
     ESP_ERROR_CHECK((pdPASS == ret_val) ? ESP_OK : ESP_FAIL);
@@ -143,13 +162,13 @@ void ui_clock_display(void)
 
     //display date at bottom
     lv_obj_align(elements.lab_dateCN, LV_ALIGN_BOTTOM_MID, 0, -35);
-    lv_obj_set_style_text_font(elements.lab_dateCN, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_font(elements.lab_dateCN, &sim_font_cn1000an_20, 0); // 28
 
     lv_obj_align(elements.lab_date, LV_ALIGN_BOTTOM_MID, 0, -5);
-    lv_obj_set_style_text_font(elements.lab_date, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_font(elements.lab_date, &sim_font_cn1000an_20, 0);
 
     lv_obj_align(elements.lab_time, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_style_text_font(elements.lab_time, &numbers_font_90_4bo, 0);
+    lv_obj_set_style_text_font(elements.lab_time, &number_font_90_4bo, 0);
 
     lv_obj_align(elements.lab_ampm, LV_ALIGN_RIGHT_MID, -5, 25);
     lv_obj_set_style_text_font(elements.lab_ampm, &lv_font_montserrat_14, 0);

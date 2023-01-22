@@ -81,7 +81,7 @@ static esp_err_t _sdcard_run(esp_periph_handle_t self, audio_event_iface_msg_t *
     return ESP_OK;
 }
 
-static void sdcard_timer_handler(xTimerHandle tmr)
+static void sdcard_timer_handler(TimerHandle_t tmr)
 {
     esp_periph_handle_t periph = (esp_periph_handle_t) pvTimerGetTimerID(tmr);
     esp_periph_send_cmd(periph, SDCARD_STATUS_CARD_DETECT_CHANGE, NULL, 0);
@@ -96,7 +96,7 @@ static esp_err_t _sdcard_init(esp_periph_handle_t self)
     } else {
         ESP_LOGE(TAG, "no sdcard detect");
     }
-    esp_periph_start_timer(self, 1000 / portTICK_RATE_MS, sdcard_timer_handler);
+    esp_periph_start_timer(self, 1000 / portTICK_PERIOD_MS, sdcard_timer_handler);
     return ESP_OK;
 }
 

@@ -9,8 +9,8 @@ set(COMPONENT_SRCS ./media_lib_common.c
 if (CONFIG_MEDIA_PROTOCOL_LIB_ENABLE)
     set(COMPONENT_REQUIRES mbedtls)
     list(APPEND COMPONENT_SRCS  ./media_lib_socket.c ./port/media_lib_socket_default.c
-                                ./media_lib_crypt.c  ./port/media_lib_crypt_default.c
-                                ./media_lib_tls.c  ./port/media_lib_tls_default.c)
+                                ./media_lib_crypt.c  ./port/media_lib_crypt_default.c)
+                                # ./media_lib_tls.c  ./port/media_lib_tls_default.c)
 endif()
 
 register_component()

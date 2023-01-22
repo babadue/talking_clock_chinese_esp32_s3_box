@@ -27,6 +27,7 @@
 #include "i2c_bus_adf.h"
 #include "board.h"
 #include "esp_log.h"
+#include "rom/gpio.h"
 
 #define MCLK_PULSES_NUMBER    (20)
 #define ES_ASSERT(a, format, b, ...) \

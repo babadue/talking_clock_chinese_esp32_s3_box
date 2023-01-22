@@ -1,10 +1,16 @@
+// #pragma once
 #include <stdio.h>
 #include "types_def.h"
+#include <stdbool.h>
+#include "alt_scores.h"
 // #include "text_text.h"
-float temperature;
-float humidity;
-char string[30];
-char dateCN_string[30];
+extern float temperature;
+extern float humidity;
+extern char string[30];
+extern char dateCN_string[30];
+extern bool clock_setting;
+
+extern Book_Keeper_Rec bkr;
 
 void tostring(char [], int);
 int toint(char []);
@@ -21,3 +27,4 @@ void speak_date(void);
 void speak_time();
 void get_date(void);
 void rlz(char *o, char *r);
+void print_time_data(TM_Data time_data);

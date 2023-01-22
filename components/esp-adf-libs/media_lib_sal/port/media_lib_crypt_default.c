@@ -57,19 +57,19 @@ static void _md5_free(media_lib_md5_handle_t ctx)
 static int _md5_start(media_lib_md5_handle_t ctx)
 {
     RETURN_ON_NULL_HANDLE(ctx);
-    return mbedtls_md5_starts_ret((mbedtls_md5_context *)ctx);
+    return mbedtls_md5_starts((mbedtls_md5_context *)ctx);
 }
 
 static int _md5_update(media_lib_md5_handle_t ctx, const unsigned char *input, size_t len)
 {
     RETURN_ON_NULL_HANDLE(ctx);
-    return mbedtls_md5_update_ret((mbedtls_md5_context *)ctx, input, len);
+    return mbedtls_md5_update((mbedtls_md5_context *)ctx, input, len);
 }
 
 static int _md5_finish(media_lib_md5_handle_t ctx, unsigned char output[16])
 {
     RETURN_ON_NULL_HANDLE(ctx);
-    return mbedtls_md5_finish_ret((mbedtls_md5_context *)ctx, output);
+    return mbedtls_md5_finish((mbedtls_md5_context *)ctx, output);
 }
 
 static void _sha256_init(media_lib_sha256_handle_t *ctx)
@@ -93,19 +93,19 @@ static void _sha256_free(media_lib_sha256_handle_t ctx)
 static int _sha256_start(media_lib_sha256_handle_t ctx)
 {
     RETURN_ON_NULL_HANDLE(ctx);
-    return mbedtls_sha256_starts_ret((mbedtls_sha256_context *)ctx, false);
+    return mbedtls_sha256_starts((mbedtls_sha256_context *)ctx, false);
 }
 
 static int _sha256_update(media_lib_sha256_handle_t ctx, const unsigned char *input, size_t len)
 {
     RETURN_ON_NULL_HANDLE(ctx);
-    return mbedtls_sha256_update_ret((mbedtls_sha256_context *)ctx, input, len);
+    return mbedtls_sha256_update((mbedtls_sha256_context *)ctx, input, len);
 }
 
 static int _sha256_finish(media_lib_sha256_handle_t ctx, unsigned char output[16])
 {
     RETURN_ON_NULL_HANDLE(ctx);
-    return mbedtls_sha256_finish_ret((mbedtls_sha256_context *)ctx, output);
+    return mbedtls_sha256_finish((mbedtls_sha256_context *)ctx, output);
 }
 
 esp_err_t media_lib_add_default_crypt_adapter(void)

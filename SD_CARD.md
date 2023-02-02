@@ -30,5 +30,5 @@ graph TD;
 ```
 <br/>
 
-Lastly, there seemed to be a bug of memory issue. &nbsp; This randomly occurs if you have already interacted with lexin (when you heard a tts talking voice) before activate HTTP server.&nbsp;  The HTTP server might not be able to start. &nbsp; To prevent this issue, whenever you need to manage mp3 files, just hit the reset to go directly to the setting menu.
+Lastly, there seemed to be a bug of memory issue. &nbsp; This randomly occurs if you have already interacted with lexin (when you heard a tts talking voice) before activate HTTP server.&nbsp;  As such, the HTTP server might not be able to start. &nbsp; To prevent this issue, whenever you need to manage mp3 files, just hit the reset to go directly to the setting menu.
 

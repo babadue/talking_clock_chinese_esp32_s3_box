@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* Popup container - can be anything you want */
+.popup {
+  position: relative;
+  display: inline-block;
+  top: 25%;
+  left: 50%;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* The actual popup */
+.popup .popuptext {
+  visibility: hidden;
+  width: 200px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 8px 0;
+  /* top: 3px; */
+  position: absolute;
+  z-index: 1;
+  /* bottom: 100%; */
+  left: 50%;
+  margin-left: -80px;
+}
+
+/* Toggle this class - hide and show the popup */
+.popup .show {
+  visibility: visible;
+  -webkit-animation: fadeIn 1s;
+  animation: fadeIn 1s;
+}
+
+/* Add animation (fade in the popup) */
+@-webkit-keyframes fadeIn {
+  from {opacity: 0;} 
+  to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity:1 ;}
+}
+</style>
+</head>
+<!-- <body style="text-align:center"> -->
+<body>
+<!-- <h2>Popup</h2> -->
+<!-- <div class="popup" onclick="myFunction()">Click me to toggle the popup! -->
+<div class="popup"> 
+  <span class="popuptext" id="myPopup">Uploading ... in progress!!!</span>
+</div>
+<table id="maintb" class="fixed" border="0">
+    <col width="1000px" /><col width="500px" />
+    <tr><td>
+        <h2>ESP32 File Server</h2>
+    </td><td>
+        <table border="0">
+            <tr>
+                <td>
+                    <label for="newfile">Upload a file</label>
+                </td>
+                <td colspan="2">
+                    <!-- <input id="newfile" type="file" onchange="setpath()" style="width:100%;"> -->
+                    <input id="newfile" type="file" onchange="upload()" style="display: none;"/>
+                    <input type="button" value="Browse ..." onclick="document.getElementById('newfile').click();"/>
+                </td>
+            </tr>
+                <td>
+
+                    <form name="mkForm" id="mkdirform" method="post" action="/mkdir" >
+                        <tr>
+                            <td><label for="newfolder">Create new folder</label></td>
+                            
+                            <td><input id="newfolder" type="text" style="width:100%;"></td>
+                            <td><input type="button" onclick="myCreateFolder()" value="Create"></td>
+                            <!-- <input type="button" type="submit">Create</button> -->
+                        </tr>
+                    </form>
+
+                </td>
+            </tr>
+        </table>
+    </td></tr>
+</table>
+
+<script>
+
+function myCreateFolder()
+{
+    // document.mkdir.action = "/mkdir/myfolder100";
+    document.mkForm.action = "/mkdir" + window.location.pathname + document.getElementById("newfolder").value;
+    document.getElementById("mkdirform").submit();
+}
+
+
+function upload() {
+    var filePath = window.location.pathname + document.getElementById("newfile").files[0].name;
+    // var filePath = document.getElementById("filepath").value;
+    // var upload_path = "/upload/" + filePath;
+    var upload_path = "/upload" + filePath;
+    var fileInput = document.getElementById("newfile").files;
+
+    console.log("upload filepath is :" + filePath);
+
+    console.log("upload upload_path is :" + upload_path);
+
+    console.log("upload fileinput is :" + fileInput);
+
+    /* Max size of an individual file. Make sure this
+     * value is same as that set in file_server.c */
+    var MAX_FILE_SIZE = 7000*1024;
+    var MAX_FILE_SIZE_STR = "7MB!";
+
+    if (fileInput.length == 0) {
+        alert("No file selected!");
+    } else if (filePath.length == 0) {
+        alert("File path on server is not set!");
+    } else if (filePath.indexOf(' ') >= 0) {
+        alert("File path on server cannot have spaces!");
+    } else if (filePath[filePath.length-1] == '/') {
+        alert("File name not specified after path!");
+    } else if (fileInput[0].size > MAX_FILE_SIZE) {
+        alert("File size must be less than " + MAX_FILE_SIZE_STR);
+    } else {
+        document.getElementById("newfile").disabled = true;
+        document.getElementById("newfolder").disabled = true;
+        document.getElementById("mkdirform").disabled = true;
+
+        var file = fileInput[0];
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (xhttp.readyState == 4) {
+                if (xhttp.status == 200) {
+                    console.log("upload xhttp.status == 200" + xhttp.responseText);
+                    // alert(xhttp.responseText);
+                    window.myPopUpFunction();
+                    location.reload();
+
+                } else if (xhttp.status == 0) {
+                    console.log("upload xhttp.status == 0 Filename too long");
+                    alert("Server closed the connection abruptly! Filename too long");
+                    location.reload()
+                } else {
+                    console.log("upload xhttp.status == else");
+                    alert(xhttp.status + " Error!\n" + xhttp.responseText);
+                    location.reload()
+                }
+            }
+        };
+        // alert("Begin to send file filePath:  " + filePath + " fileinput:  " + fileInput);
+        
+        xhttp.open("POST", upload_path, true);
+        xhttp.send(file);
+        // alert("Uploading . . .");
+        window.myPopUpFunction();
+    }
+}
+
+// When the user clicks on div, open the popup
+function myPopUpFunction() {
+  var popup = document.getElementById("myPopup");
+  popup.classList.toggle("show");
+}
+
+</script>
+
+</body>
+</html>

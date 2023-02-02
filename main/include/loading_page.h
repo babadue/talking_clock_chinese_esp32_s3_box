@@ -1,0 +1,1 @@
+void starting_loading_page(bool check);

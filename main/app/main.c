@@ -32,27 +32,26 @@ void app_main()
 {
     esp_log_level_set("*", ESP_LOG_NONE);
 
-//initial sd card
-    pmp3_sdcard();   
-    
-// initial some variables
-   setting_me();
+    // initial sd card
+    pmp3_sdcard();
 
-    ESP_LOGI(TAG,"-----------app_main started1-----------");
-   //  ESP_LOGI(TAG, "app_main core id is: %d", xPortGetCoreID());
+    // initial some variables
+    setting_me();
 
-// initial lcd
+    ESP_LOGI(TAG, "-----------app_main started1-----------");
+    //  ESP_LOGI(TAG, "app_main core id is: %d", xPortGetCoreID());
+
+    // initial lcd
     ESP_ERROR_CHECK(bsp_board_init());
     ESP_ERROR_CHECK(bsp_board_power_ctrl(POWER_MODULE_AUDIO, true));
     ESP_ERROR_CHECK(lv_port_init());
     ui_clock_display();
-    bsp_lcd_set_backlight(true);  
+    bsp_lcd_set_backlight(true);
 
-//  initial tts and sr
+    //  initial tts and sr
     initializeBoard();
     speech();
 
-// // get mp3 files
-    get_new_mp3_list();  
-
+    // // get mp3 files
+    get_new_mp3_list();
 }

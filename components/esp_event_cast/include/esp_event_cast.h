@@ -59,7 +59,7 @@ esp_err_t esp_event_cast_destroy(esp_event_cast_handle_t handle);
  *     - ESP_OK: success
  *     - ESP_FAIL: others
  */
-esp_err_t esp_event_cast_register(esp_event_cast_handle_t handle, xQueueHandle que);
+esp_err_t esp_event_cast_register(esp_event_cast_handle_t handle, QueueHandle_t que);
 
 /**
  * @brief Remove queue item from esp_event_cast_handle_t object, but does't delete the queue
@@ -71,7 +71,7 @@ esp_err_t esp_event_cast_register(esp_event_cast_handle_t handle, xQueueHandle q
  *     - ESP_OK: success
  *     - ESP_FAIL: others
  */
-esp_err_t esp_event_cast_unregister(esp_event_cast_handle_t handle, xQueueHandle que);
+esp_err_t esp_event_cast_unregister(esp_event_cast_handle_t handle, QueueHandle_t que);
 
 /**
  * @brief Broadcasting the data to receiver
@@ -110,4 +110,4 @@ esp_err_t esp_event_cast_broadcasting_isr(esp_event_cast_handle_t handle, void *
  */
 esp_err_t esp_event_cast_get_count(esp_event_cast_handle_t handle);
 
-#endif  //__ESP_EVENT_CAST_H__
+#endif //__ESP_EVENT_CAST_H__

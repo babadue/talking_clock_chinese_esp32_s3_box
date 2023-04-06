@@ -45,66 +45,73 @@ static const char *TAG = "PWM_STREAM";
 #define BUFFER_MIN_SIZE (256UL)
 #define SAMPLE_RATE_MAX (48000)
 #define SAMPLE_RATE_MIN (8000)
-#define CHANNEL_LEFT_INDEX  (0)
+#define CHANNEL_LEFT_INDEX (0)
 #define CHANNEL_RIGHT_INDEX (1)
-#define CHANNEL_LEFT_MASK   (0x01)
-#define CHANNEL_RIGHT_MASK  (0x02)
+#define CHANNEL_LEFT_MASK (0x01)
+#define CHANNEL_RIGHT_MASK (0x02)
 #define AUDIO_PWM_CH_MAX (2)
 
-typedef struct {
-    char *buf;                         /**< Original pointer */
-    uint32_t volatile head;            /**< ending pointer */
-    uint32_t volatile tail;            /**< Read pointer */
-    uint32_t size;                     /**< Buffer size */
-    uint32_t is_give;                  /**< semaphore give flag */
-    SemaphoreHandle_t semaphore;       /**< Semaphore for data */
+typedef struct
+{
+    char *buf;                   /**< Original pointer */
+    uint32_t volatile head;      /**< ending pointer */
+    uint32_t volatile tail;      /**< Read pointer */
+    uint32_t size;               /**< Buffer size */
+    uint32_t is_give;            /**< semaphore give flag */
+    SemaphoreHandle_t semaphore; /**< Semaphore for data */
 } data_list_t;
 typedef data_list_t *pwm_data_handle_t;
 
-typedef enum {
-    AUDIO_PWM_STATUS_UNINIT = 0,    /*!< pwm audio uninitialized */
-    AUDIO_PWM_STATUS_IDLE   = 1,    /*!< pwm audio idle */
-    AUDIO_PWM_STATUS_BUSY   = 2,    /*!< pwm audio busy */
+typedef enum
+{
+    AUDIO_PWM_STATUS_UNINIT = 0, /*!< pwm audio uninitialized */
+    AUDIO_PWM_STATUS_IDLE = 1,   /*!< pwm audio idle */
+    AUDIO_PWM_STATUS_BUSY = 2,   /*!< pwm audio busy */
 } audio_pwm_status_t;
 
-typedef struct {
-    audio_pwm_config_t    config;                          /**< pwm audio config struct */
-    ledc_channel_config_t ledc_channel[AUDIO_PWM_CH_MAX];  /**< ledc channel config */
-    ledc_timer_config_t   ledc_timer;                      /**< ledc timer config  */
-    timg_dev_t            *timg_dev;                       /**< timer group register pointer */
-    pwm_data_handle_t     data;                            /**< audio data pointer */
-    uint32_t              channel_mask;                    /**< channel gpio mask */
-    uint32_t              channel_set_num;                 /**< channel audio set number */
-    int32_t               framerate;                       /*!< frame rates in Hz */
-    int32_t               bits_per_sample;                 /*!< bits per sample (16, 32) */
-    audio_pwm_status_t    status;
+typedef struct
+{
+    audio_pwm_config_t config;                            /**< pwm audio config struct */
+    ledc_channel_config_t ledc_channel[AUDIO_PWM_CH_MAX]; /**< ledc channel config */
+    ledc_timer_config_t ledc_timer;                       /**< ledc timer config  */
+    timg_dev_t *timg_dev;                                 /**< timer group register pointer */
+    pwm_data_handle_t data;                               /**< audio data pointer */
+    uint32_t channel_mask;                                /**< channel gpio mask */
+    uint32_t channel_set_num;                             /**< channel audio set number */
+    int32_t framerate;                                    /*!< frame rates in Hz */
+    int32_t bits_per_sample;                              /*!< bits per sample (16, 32) */
+    audio_pwm_status_t status;
 } audio_pwm_t;
 typedef audio_pwm_t *audio_pwm_handle_t;
 
-static volatile uint32_t *g_ledc_left_conf0_val  = NULL;
-static volatile uint32_t *g_ledc_left_conf1_val  = NULL;
-static volatile uint32_t *g_ledc_left_duty_val   = NULL;
+static volatile uint32_t *g_ledc_left_conf0_val = NULL;
+static volatile uint32_t *g_ledc_left_conf1_val = NULL;
+static volatile uint32_t *g_ledc_left_duty_val = NULL;
 static volatile uint32_t *g_ledc_right_conf0_val = NULL;
 static volatile uint32_t *g_ledc_right_conf1_val = NULL;
-static volatile uint32_t *g_ledc_right_duty_val  = NULL;
+static volatile uint32_t *g_ledc_right_duty_val = NULL;
 static audio_pwm_handle_t g_audio_pwm_handle = NULL;
 
-typedef struct pwm_stream {
+typedef struct pwm_stream
+{
     audio_stream_type_t type;
-    pwm_stream_cfg_t    config;
-    bool                is_open;
-    bool                uninstall_drv;
+    pwm_stream_cfg_t config;
+    bool is_open;
+    bool uninstall_drv;
 } pwm_stream_t;
 
 static esp_err_t pwm_data_list_destroy(pwm_data_handle_t data)
 {
-    if (data == NULL) {
+    if (data == NULL)
+    {
         return ESP_ERR_INVALID_ARG;
     }
-    if (data->buf) {
+    if (data->buf)
+    {
         audio_free(data->buf);
     }
-    if (data->semaphore) {
+    if (data->semaphore)
+    {
         vSemaphoreDelete(data->semaphore);
     }
     audio_free(data);
@@ -114,7 +121,8 @@ static esp_err_t pwm_data_list_destroy(pwm_data_handle_t data)
 
 static pwm_data_handle_t pwm_data_list_create(int size)
 {
-    if (size < (BUFFER_MIN_SIZE << 2)) {
+    if (size < (BUFFER_MIN_SIZE << 2))
+    {
         // ESP_LOGE(TAG, "Invalid buffer size, Minimum = %d", (int32_t)(BUFFER_MIN_SIZE << 2));
         return NULL;
     }
@@ -134,15 +142,18 @@ static pwm_data_handle_t pwm_data_list_create(int size)
     return data;
 
 data_error:
-    if (data->semaphore != NULL) {
+    if (data->semaphore != NULL)
+    {
         vSemaphoreDelete(data->semaphore);
         data->semaphore = NULL;
     }
-    if (data->buf) {
+    if (data->buf)
+    {
         audio_free(data->buf);
         data->buf = NULL;
     }
-    if (data) {
+    if (data)
+    {
         audio_free(data);
         data = NULL;
     }
@@ -152,7 +163,8 @@ data_error:
 static uint32_t IRAM_ATTR pwm_data_list_get_count(pwm_data_handle_t data)
 {
     uint32_t tail = data->tail;
-    if (data->head >= tail) {
+    if (data->head >= tail)
+    {
         return (data->head - tail);
     }
     return (data->size - (tail - data->head));
@@ -172,12 +184,14 @@ static esp_err_t pwm_data_list_flush(pwm_data_handle_t data)
 static esp_err_t IRAM_ATTR pwm_data_list_read_byte(pwm_data_handle_t data, uint8_t *outdata)
 {
     uint32_t tail = data->tail;
-    if ((tail == data->head) || (tail == (data->head + 1))) {
+    if ((tail == data->head) || (tail == (data->head + 1)))
+    {
         return ESP_FAIL;
     }
     *outdata = data->buf[tail];
     tail++;
-    if (tail == data->size) {
+    if (tail == data->size)
+    {
         tail = 0;
     }
 
@@ -188,10 +202,12 @@ static esp_err_t IRAM_ATTR pwm_data_list_read_byte(pwm_data_handle_t data, uint8
 static esp_err_t pwm_data_list_write_byte(pwm_data_handle_t data, const uint8_t indata)
 {
     uint32_t next_head = data->head + 1;
-    if (next_head == data->size) {
+    if (next_head == data->size)
+    {
         next_head = 0;
     }
-    if (next_head == data->tail) {
+    if (next_head == data->tail)
+    {
         return ESP_FAIL;
     }
     data->buf[data->head] = indata;
@@ -202,7 +218,8 @@ static esp_err_t pwm_data_list_write_byte(pwm_data_handle_t data, const uint8_t 
 static esp_err_t pwm_data_list_wait_semaphore(pwm_data_handle_t data, TickType_t ticks_to_wait)
 {
     data->is_give = 0;
-    if (xSemaphoreTake(data->semaphore, ticks_to_wait) == pdTRUE) {
+    if (xSemaphoreTake(data->semaphore, ticks_to_wait) == pdTRUE)
+    {
         return ESP_OK;
     }
     return ESP_FAIL;
@@ -226,29 +243,34 @@ static void IRAM_ATTR timer_group_isr(void *para)
 {
     audio_pwm_handle_t handle = g_audio_pwm_handle;
 
-    if (handle == NULL) {
+    if (handle == NULL)
+    {
         return;
     }
 
 #ifdef CONFIG_IDF_TARGET_ESP32S2
 #if ((ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 2, 0)) && (ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 4, 0)))
-    if (handle->timg_dev->int_st.val & BIT(handle->config.timer_num)) {
+    if (handle->timg_dev->int_st.val & BIT(handle->config.timer_num))
+    {
         handle->timg_dev->int_clr.val |= (1UL << handle->config.timer_num);
     }
     handle->timg_dev->hw_timer[handle->config.timer_num].config.alarm_en = TIMER_ALARM_EN;
 #else
-    if (handle->timg_dev->int_st_timers.val & BIT(handle->config.timer_num)) {
+    if (handle->timg_dev->int_st_timers.val & BIT(handle->config.timer_num))
+    {
         handle->timg_dev->int_clr_timers.val |= (1UL << handle->config.timer_num);
     }
     handle->timg_dev->hw_timer[handle->config.timer_num].config.tx_alarm_en = TIMER_ALARM_EN;
 #endif
 #elif CONFIG_IDF_TARGET_ESP32
-    if (handle->timg_dev->int_st_timers.val & BIT(handle->config.timer_num)) {
+    if (handle->timg_dev->int_st_timers.val & BIT(handle->config.timer_num))
+    {
         handle->timg_dev->int_clr_timers.val |= (1UL << handle->config.timer_num);
     }
     handle->timg_dev->hw_timer[handle->config.timer_num].config.alarm_en = TIMER_ALARM_EN;
 #elif CONFIG_IDF_TARGET_ESP32S3
-    if (handle->timg_dev->int_st_timers.val & BIT(handle->config.timer_num)) {
+    if (handle->timg_dev->int_st_timers.val & BIT(handle->config.timer_num))
+    {
         handle->timg_dev->int_clr_timers.val |= (1UL << handle->config.timer_num);
     }
     handle->timg_dev->hw_timer[handle->config.timer_num].config.tn_alarm_en = TIMER_ALARM_EN;
@@ -257,57 +279,83 @@ static void IRAM_ATTR timer_group_isr(void *para)
     static uint8_t wave_h, wave_l;
     static uint16_t value;
 
-    if (handle->channel_mask & CHANNEL_LEFT_MASK) {
-        if (handle->config.duty_resolution > 8) {
+    if (handle->channel_mask & CHANNEL_LEFT_MASK)
+    {
+        if (handle->config.duty_resolution > 8)
+        {
             pwm_data_list_read_byte(handle->data, &wave_l);
-            if (ESP_OK == pwm_data_list_read_byte(handle->data, &wave_h)) {
+            if (ESP_OK == pwm_data_list_read_byte(handle->data, &wave_h))
+            {
                 value = ((wave_h << 8) | wave_l);
                 ledc_set_left_duty_fast(value);
             }
-        } else {
-            if (ESP_OK == pwm_data_list_read_byte(handle->data, &wave_h)) {
+        }
+        else
+        {
+            if (ESP_OK == pwm_data_list_read_byte(handle->data, &wave_h))
+            {
                 ledc_set_left_duty_fast(wave_h);
             }
         }
     }
 
-    if (handle->channel_mask & CHANNEL_RIGHT_MASK) {
-        if (handle->channel_set_num == 1) {
-            if (handle->config.duty_resolution > 8) {
+    if (handle->channel_mask & CHANNEL_RIGHT_MASK)
+    {
+        if (handle->channel_set_num == 1)
+        {
+            if (handle->config.duty_resolution > 8)
+            {
                 ledc_set_right_duty_fast(value);
-            } else {
+            }
+            else
+            {
                 ledc_set_right_duty_fast(wave_h);
             }
-        } else {
-            if (handle->config.duty_resolution > 8) {
+        }
+        else
+        {
+            if (handle->config.duty_resolution > 8)
+            {
                 pwm_data_list_read_byte(handle->data, &wave_l);
-                if (ESP_OK == pwm_data_list_read_byte(handle->data, &wave_h)) {
+                if (ESP_OK == pwm_data_list_read_byte(handle->data, &wave_h))
+                {
                     value = ((wave_h << 8) | wave_l);
                     ledc_set_right_duty_fast(value);
                 }
-            } else {
-                if (ESP_OK == pwm_data_list_read_byte(handle->data, &wave_h)) {
+            }
+            else
+            {
+                if (ESP_OK == pwm_data_list_read_byte(handle->data, &wave_h))
+                {
                     ledc_set_right_duty_fast(wave_h);
                 }
             }
         }
-    } else {
-        if (handle->channel_set_num == 2) {
-            if (handle->config.duty_resolution > 8) {
+    }
+    else
+    {
+        if (handle->channel_set_num == 2)
+        {
+            if (handle->config.duty_resolution > 8)
+            {
                 pwm_data_list_read_byte(handle->data, &wave_h);
                 pwm_data_list_read_byte(handle->data, &wave_h);
-            } else {
+            }
+            else
+            {
                 pwm_data_list_read_byte(handle->data, &wave_h);
             }
             pwm_data_list_read_byte(handle->data, &wave_l);
         }
     }
 
-    if (0 == handle->data->is_give && pwm_data_list_get_free(handle->data) > BUFFER_MIN_SIZE) {
+    if (0 == handle->data->is_give && pwm_data_list_get_free(handle->data) > BUFFER_MIN_SIZE)
+    {
         handle->data->is_give = 1;
         BaseType_t xHigherPriorityTaskWoken;
         xSemaphoreGiveFromISR(handle->data->semaphore, &xHigherPriorityTaskWoken);
-        if (pdFALSE != xHigherPriorityTaskWoken) {
+        if (pdFALSE != xHigherPriorityTaskWoken)
+        {
             portYIELD_FROM_ISR();
         }
     }
@@ -317,14 +365,17 @@ static esp_err_t audio_pwm_init(const audio_pwm_config_t *cfg)
 {
     esp_err_t res = ESP_OK;
     AUDIO_NULL_CHECK(TAG, cfg, return ESP_ERR_INVALID_ARG);
-    if (!(cfg->tg_num < TIMER_GROUP_MAX)) {
+    if (!(cfg->tg_num < TIMER_GROUP_MAX))
+    {
         ESP_LOGE(TAG, "%s:%d (%s): AUDIO PWM TIMER GROUP NUMBER IS %d AND SHOULD BE 0 OR 1", __FILENAME__, __LINE__, __FUNCTION__, cfg->tg_num);
     }
-    if (!(cfg->timer_num < TIMER_MAX)) {
+    if (!(cfg->timer_num < TIMER_MAX))
+    {
         ESP_LOGE(TAG, "%s:%d (%s): AUDIO PWM TIMER NUMBER IS %d AND SHOULD BE 0 OR 1", __FILENAME__, __LINE__, __FUNCTION__, cfg->timer_num);
     }
 
-    if (cfg->duty_resolution < 8 || cfg->duty_resolution > 10) {
+    if (cfg->duty_resolution < 8 || cfg->duty_resolution > 10)
+    {
         ESP_LOGE(TAG, "%s:%d (%s): AUDIO PWM RESOLUTION IS %d AND SHOULD BE 8, 9, 10", __FILENAME__, __LINE__, __FUNCTION__, cfg->duty_resolution);
     }
 
@@ -337,13 +388,17 @@ static esp_err_t audio_pwm_init(const audio_pwm_config_t *cfg)
 
     handle->config = *cfg;
     g_audio_pwm_handle = handle;
-    if (cfg->tg_num == TIMER_GROUP_0) {
+    if (cfg->tg_num == TIMER_GROUP_0)
+    {
         handle->timg_dev = TIMER_0;
-    } else {
+    }
+    else
+    {
         handle->timg_dev = TIMER_1;
     }
     handle->channel_mask = 0;
-    if (handle->config.gpio_num_left >= 0) {
+    if (handle->config.gpio_num_left >= 0)
+    {
         handle->ledc_channel[CHANNEL_LEFT_INDEX].channel = handle->config.ledc_channel_left;
         handle->ledc_channel[CHANNEL_LEFT_INDEX].duty = 0;
         handle->ledc_channel[CHANNEL_LEFT_INDEX].gpio_num = handle->config.gpio_num_left;
@@ -355,7 +410,8 @@ static esp_err_t audio_pwm_init(const audio_pwm_config_t *cfg)
         AUDIO_CHECK(TAG, ESP_OK == res, goto init_error, "AUDIO PWM LEFT CHANNEL CONFIG ERROR");
         handle->channel_mask |= CHANNEL_LEFT_MASK;
     }
-    if (handle->config.gpio_num_right >= 0) {
+    if (handle->config.gpio_num_right >= 0)
+    {
         handle->ledc_channel[CHANNEL_RIGHT_INDEX].channel = handle->config.ledc_channel_right;
         handle->ledc_channel[CHANNEL_RIGHT_INDEX].duty = 0;
         handle->ledc_channel[CHANNEL_RIGHT_INDEX].gpio_num = handle->config.gpio_num_right;
@@ -392,11 +448,13 @@ static esp_err_t audio_pwm_init(const audio_pwm_config_t *cfg)
     return res;
 
 init_error:
-    if (handle->data) {
+    if (handle->data)
+    {
         audio_free(handle->data);
         handle->data = NULL;
     }
-    if (handle) {
+    if (handle)
+    {
         audio_free(handle);
         handle = NULL;
     }
@@ -407,13 +465,16 @@ esp_err_t audio_pwm_set_param(int rate, ledc_timer_bit_t bits, int ch)
 {
     esp_err_t res = ESP_OK;
     AUDIO_CHECK(TAG, g_audio_pwm_handle->status != AUDIO_PWM_STATUS_BUSY, return ESP_FAIL, "AUDIO PWM CAN NOT SET PARAM, WHEN AUDIO PWM STATUS IS BUSY");
-    if (rate > SAMPLE_RATE_MAX || rate < SAMPLE_RATE_MIN) {
+    if (rate > SAMPLE_RATE_MAX || rate < SAMPLE_RATE_MIN)
+    {
         ESP_LOGE(TAG, "%s:%d (%s): AUDIO PWM SAMPLE IS %d AND SHOULD BE BETWEEN 8000 AND 48000", __FILENAME__, __LINE__, __FUNCTION__, rate);
     }
-    if (!(bits == 32 || bits == 16 || bits == 8)) {
+    if (!(bits == 32 || bits == 16 || bits == 8))
+    {
         ESP_LOGE(TAG, "%s:%d (%s): AUDIO PWM BITS IS %d AND SHOULD BE 8, 16, 32", __FILENAME__, __LINE__, __FUNCTION__, bits);
     }
-    if (!(ch == 2 || ch == 1)) {
+    if (!(ch == 2 || ch == 1))
+    {
         ESP_LOGE(TAG, "%s:%d (%s): AUDIO PWM CH IS %d AND SHOULD BE 1 OR 2", __FILENAME__, __LINE__, __FUNCTION__, ch);
     }
 
@@ -445,7 +506,8 @@ esp_err_t audio_pwm_set_sample_rate(int rate)
 {
     esp_err_t res;
     AUDIO_CHECK(TAG, g_audio_pwm_handle->status != AUDIO_PWM_STATUS_BUSY, return ESP_FAIL, "AUDIO PWM CAN NOT SET PARAM, WHEN AUDIO PWM STATUS IS BUSY");
-    if (rate > SAMPLE_RATE_MAX || rate < SAMPLE_RATE_MIN) {
+    if (rate > SAMPLE_RATE_MAX || rate < SAMPLE_RATE_MIN)
+    {
         ESP_LOGE(TAG, "%s:%d (%s): AUDIO PWM SAMPLE IS %d AND SHOULD BE BETWEEN 8000 AND 48000", __FILENAME__, __LINE__, __FUNCTION__, rate);
     }
 
@@ -473,55 +535,69 @@ static esp_err_t pwm_data_convert(pwm_data_handle_t data, uint8_t *inbuf, int32_
     int8_t shift = bits_per - duty;
     uint32_t len = bytes;
 
-    if (bits_per == 16) {
+    if (bits_per == 16)
+    {
         len >>= 1;
         uint16_t *buf_16b = (uint16_t *)inbuf;
         uint16_t value;
         int16_t temp;
-        if (duty > 8) {
-            for (size_t i = 0; i < len; i++) {
+        if (duty > 8)
+        {
+            for (size_t i = 0; i < len; i++)
+            {
                 temp = buf_16b[i];
                 value = temp + 0x7fff;
                 value >>= shift;
                 pwm_data_list_write_byte(data, value);
                 pwm_data_list_write_byte(data, value >> 8);
             }
-        } else {
-            for (size_t i = 0; i < len; i++) {
+        }
+        else
+        {
+            for (size_t i = 0; i < len; i++)
+            {
                 temp = buf_16b[i];
                 value = temp + 0x7fff;
                 value >>= shift;
                 pwm_data_list_write_byte(data, value);
             }
         }
-    } else if (bits_per == 32) {
+    }
+    else if (bits_per == 32)
+    {
         len >>= 2;
         uint32_t *buf_32b = (uint32_t *)inbuf;
         uint32_t value;
         int32_t temp;
-        if (duty > 8) {
-            for (size_t i = 0; i < len; i++) {
+        if (duty > 8)
+        {
+            for (size_t i = 0; i < len; i++)
+            {
                 temp = buf_32b[i];
                 value = temp + 0x7fffffff;
                 value >>= shift;
                 pwm_data_list_write_byte(data, value);
                 pwm_data_list_write_byte(data, value >> 8);
             }
-        } else {
-            for (size_t i = 0; i < len; i++) {
+        }
+        else
+        {
+            for (size_t i = 0; i < len; i++)
+            {
                 temp = buf_32b[i];
                 value = temp + 0x7fffffff;
                 value >>= shift;
                 pwm_data_list_write_byte(data, value);
             }
         }
-    } else {
+    }
+    else
+    {
         // ESP_LOGE(TAG, "Only support bits (16 or 32), now bits_per is %d", bits_per);
         ESP_LOGE(TAG, "Only support bits (16 or 32), now bits_per is");
     }
     return ESP_OK;
 }
-
 
 esp_err_t audio_pwm_write(uint8_t *inbuf, size_t inbuf_len, size_t *bytes_written, TickType_t ticks_to_wait)
 {
@@ -531,15 +607,19 @@ esp_err_t audio_pwm_write(uint8_t *inbuf, size_t inbuf_len, size_t *bytes_writte
 
     *bytes_written = 0;
     pwm_data_handle_t data = handle->data;
-    while (inbuf_len) {
-        if (ESP_OK == pwm_data_list_wait_semaphore(data, ticks_to_wait)) {
+    while (inbuf_len)
+    {
+        if (ESP_OK == pwm_data_list_wait_semaphore(data, ticks_to_wait))
+        {
             uint32_t free = pwm_data_list_get_free(data);
             uint32_t bytes_can_write = inbuf_len;
-            if (inbuf_len > free) {
+            if (inbuf_len > free)
+            {
                 bytes_can_write = free;
             }
             bytes_can_write &= 0xfffffffc;
-            if (0 == bytes_can_write) {
+            if (0 == bytes_can_write)
+            {
                 *bytes_written += inbuf_len;
                 return ESP_OK;
             }
@@ -547,7 +627,9 @@ esp_err_t audio_pwm_write(uint8_t *inbuf, size_t inbuf_len, size_t *bytes_writte
             inbuf += bytes_can_write;
             inbuf_len -= bytes_can_write;
             *bytes_written += bytes_can_write;
-        } else {
+        }
+        else
+        {
             res = ESP_FAIL;
         }
     }
@@ -559,7 +641,8 @@ static esp_err_t audio_pwm_start(void)
     esp_err_t res;
     audio_pwm_handle_t handle = g_audio_pwm_handle;
 
-    if (handle->status != AUDIO_PWM_STATUS_IDLE) {
+    if (handle->status != AUDIO_PWM_STATUS_IDLE)
+    {
         ESP_LOGE(TAG, "%s:%d (%s): AUDIO PWM STATE IS %d, AND SHOULD BE IDLE WHEN PWM START", __FILENAME__, __LINE__, __FUNCTION__, handle->status);
     }
 
@@ -585,14 +668,18 @@ static esp_err_t audio_pwm_deinit(void)
     AUDIO_NULL_CHECK(TAG, handle, return ESP_FAIL);
     handle->status = AUDIO_PWM_STATUS_UNINIT;
     audio_pwm_stop();
-    for (size_t i = 0; i < AUDIO_PWM_CH_MAX; i++) {
-        if (handle->ledc_channel[i].gpio_num >= 0) {
+    for (size_t i = 0; i < AUDIO_PWM_CH_MAX; i++)
+    {
+        if (handle->ledc_channel[i].gpio_num >= 0)
+        {
             ledc_stop(handle->ledc_channel[i].speed_mode, handle->ledc_channel[i].channel, 0);
         }
     }
 
-    for (size_t i = 0; i < AUDIO_PWM_CH_MAX; i++) {
-        if (handle->ledc_channel[i].gpio_num >= 0) {
+    for (size_t i = 0; i < AUDIO_PWM_CH_MAX; i++)
+    {
+        if (handle->ledc_channel[i].gpio_num >= 0)
+        {
             gpio_set_direction(handle->ledc_channel[i].gpio_num, GPIO_MODE_INPUT);
         }
     }
@@ -613,7 +700,8 @@ static esp_err_t _pwm_destroy(audio_element_handle_t self)
 {
     esp_err_t res = ESP_OK;
     pwm_stream_t *pwm = (pwm_stream_t *)audio_element_getdata(self);
-    if (pwm->uninstall_drv) {
+    if (pwm->uninstall_drv)
+    {
         res = audio_pwm_deinit();
     }
     audio_free(pwm);
@@ -624,10 +712,11 @@ static esp_err_t _pwm_open(audio_element_handle_t self)
 {
     esp_err_t res = ESP_OK;
     pwm_stream_t *pwm = (pwm_stream_t *)audio_element_getdata(self);
-    if (pwm->is_open) {
+    if (pwm->is_open)
+    {
         return ESP_OK;
     }
-    res = audio_element_set_input_timeout(self, 2000 / portTICK_RATE_MS);
+    res = audio_element_set_input_timeout(self, 2000 / portTICK_PERIOD_MS);
     pwm->is_open = true;
     return res;
 }
@@ -637,7 +726,8 @@ static esp_err_t _pwm_close(audio_element_handle_t self)
     esp_err_t res = ESP_OK;
     pwm_stream_t *pwm = (pwm_stream_t *)audio_element_getdata(self);
     pwm->is_open = false;
-    if (AEL_STATE_PAUSED != audio_element_get_state(self)) {
+    if (AEL_STATE_PAUSED != audio_element_get_state(self))
+    {
         audio_element_report_pos(self);
         audio_element_set_byte_pos(self, 0);
         res = audio_pwm_stop();
@@ -649,14 +739,18 @@ static int _pwm_process(audio_element_handle_t self, char *in_buffer, int in_len
 {
     int r_size = audio_element_input(self, in_buffer, in_len);
     int w_size = 0;
-    if (r_size == AEL_IO_TIMEOUT) {
+    if (r_size == AEL_IO_TIMEOUT)
+    {
         memset(in_buffer, 0x00, in_len);
         r_size = in_len;
     }
-    if (r_size > 0) {
+    if (r_size > 0)
+    {
         w_size = audio_element_output(self, in_buffer, r_size);
         audio_element_update_byte_pos(self, w_size);
-    } else {
+    }
+    else
+    {
         w_size = r_size;
     }
     return w_size;
@@ -679,9 +773,12 @@ audio_element_handle_t pwm_stream_init(pwm_stream_cfg_t *config)
     cfg.task_core = config->task_core;
     cfg.buffer_len = config->buffer_len;
     cfg.stack_in_ext = config->ext_stack;
-    if (config->type == AUDIO_STREAM_WRITER) {
+    if (config->type == AUDIO_STREAM_WRITER)
+    {
         cfg.write = _pwm_write;
-    } else {
+    }
+    else
+    {
         ESP_LOGE(TAG, "PWM stream only support AUDIO_STREAM_WRITER mode, not support %d", config->type);
         return NULL;
     }

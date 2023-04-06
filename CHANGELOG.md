@@ -17,3 +17,8 @@
     adding http server as file server to allow uploading mp3 directly to the sd card.
 
     refactoring a little.
+
+[v0.12] (04-05-2023)
+
+    moved to `idf v5.0.1`
+

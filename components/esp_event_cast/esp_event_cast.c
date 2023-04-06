@@ -35,36 +35,41 @@
 
 static const char *TAG = "EVT_CAST";
 
-typedef struct esp_evt_cast_item {
-    STAILQ_ENTRY(esp_evt_cast_item)     next;
-    xQueueHandle                        que;
+typedef struct esp_evt_cast_item
+{
+    STAILQ_ENTRY(esp_evt_cast_item)
+    next;
+    QueueHandle_t que;
 } esp_evt_cast_item_t;
 
 typedef STAILQ_HEAD(esp_event_cast_list, esp_evt_cast_item) esp_event_cast_list_t;
 
-typedef struct esp_event_cast {
-    SemaphoreHandle_t        _mux;
-    esp_event_cast_list_t   evt_list;
+typedef struct esp_event_cast
+{
+    SemaphoreHandle_t _mux;
+    esp_event_cast_list_t evt_list;
 } esp_event_cast_t;
-
 
 esp_event_cast_handle_t esp_event_cast_create(void)
 {
     esp_event_cast_handle_t obj = audio_calloc(1, sizeof(esp_event_cast_t));
     AUDIO_NULL_CHECK(TAG, obj, return NULL);
-    obj->_mux =  mutex_create();
-    AUDIO_NULL_CHECK(TAG, obj->_mux, {audio_free(obj);
-                                      return NULL;
-                                     });
+    obj->_mux = mutex_create();
+    AUDIO_NULL_CHECK(TAG, obj->_mux, {
+        audio_free(obj);
+        return NULL;
+    });
     STAILQ_INIT(&obj->evt_list);
     return obj;
 }
 
 esp_err_t esp_event_cast_destroy(esp_event_cast_handle_t handle)
 {
-    if (handle) {
+    if (handle)
+    {
         esp_evt_cast_item_t *item, *tmp;
-        STAILQ_FOREACH_SAFE(item, &handle->evt_list, next, tmp) {
+        STAILQ_FOREACH_SAFE(item, &handle->evt_list, next, tmp)
+        {
             STAILQ_REMOVE(&handle->evt_list, item, esp_evt_cast_item, next);
             audio_free(item);
         }
@@ -75,14 +80,15 @@ esp_err_t esp_event_cast_destroy(esp_event_cast_handle_t handle)
     return ESP_FAIL;
 }
 
-esp_err_t esp_event_cast_register(esp_event_cast_handle_t handle, xQueueHandle que)
+esp_err_t esp_event_cast_register(esp_event_cast_handle_t handle, QueueHandle_t que)
 {
-    if ((handle == NULL) || (que == NULL)) {
+    if ((handle == NULL) || (que == NULL))
+    {
         ESP_LOGE(TAG, "func:%s, invalid parameters, handle=%p, que=%p", __func__, handle, que);
         return ESP_FAIL;
     }
     esp_evt_cast_item_t *local_list = audio_calloc(1, sizeof(esp_evt_cast_item_t));
-    AUDIO_MEM_CHECK(TAG, local_list, {return ESP_FAIL;});
+    AUDIO_MEM_CHECK(TAG, local_list, { return ESP_FAIL; });
     mutex_lock(handle->_mux);
     local_list->que = que;
     STAILQ_INSERT_TAIL(&handle->evt_list, local_list, next);
@@ -92,17 +98,20 @@ esp_err_t esp_event_cast_register(esp_event_cast_handle_t handle, xQueueHandle q
     return ESP_OK;
 }
 
-esp_err_t esp_event_cast_unregister(esp_event_cast_handle_t handle, xQueueHandle que)
+esp_err_t esp_event_cast_unregister(esp_event_cast_handle_t handle, QueueHandle_t que)
 {
-    if ((handle == NULL) || (que == NULL)) {
+    if ((handle == NULL) || (que == NULL))
+    {
         ESP_LOGE(TAG, "func:%s, invalid parameters, handle=%p, que=%p", __func__, handle, que);
         return ESP_FAIL;
     }
     mutex_lock(handle->_mux);
     esp_evt_cast_item_t *item, *tmp;
-    STAILQ_FOREACH_SAFE(item,  &handle->evt_list, next, tmp) {
+    STAILQ_FOREACH_SAFE(item, &handle->evt_list, next, tmp)
+    {
         ESP_LOGD(TAG, "func:%s, list=%p, que=%p, target que:%p", __func__, item, item->que, que);
-        if (item->que == que) {
+        if (item->que == que)
+        {
             STAILQ_REMOVE(&handle->evt_list, item, esp_evt_cast_item, next);
             audio_free(item);
             break;
@@ -115,17 +124,21 @@ esp_err_t esp_event_cast_unregister(esp_event_cast_handle_t handle, xQueueHandle
 
 esp_err_t esp_event_cast_broadcasting(esp_event_cast_handle_t handle, void *data)
 {
-    if ((handle == NULL) || (data == NULL)) {
+    if ((handle == NULL) || (data == NULL))
+    {
         ESP_LOGE(TAG, "func:%s, invalid parameters, handle=%p, data=%p", __func__, handle, data);
         return ESP_FAIL;
     }
     mutex_lock(handle->_mux);
 
     esp_evt_cast_item_t *item, *tmp;
-    STAILQ_FOREACH_SAFE(item,  &handle->evt_list, next, tmp) {
+    STAILQ_FOREACH_SAFE(item, &handle->evt_list, next, tmp)
+    {
         ESP_LOGD(TAG, "func:%s, list=%p, que=%p, data:%p", __func__, item, item->que, data);
-        if (item->que) {
-            if (pdFALSE == xQueueSend(item->que, data, 0)) {
+        if (item->que)
+        {
+            if (pdFALSE == xQueueSend(item->que, data, 0))
+            {
                 ESP_LOGW(TAG, "Queue[%p] send failed, free size:%d", item->que, uxQueueSpacesAvailable(item->que));
             }
         }
@@ -136,15 +149,19 @@ esp_err_t esp_event_cast_broadcasting(esp_event_cast_handle_t handle, void *data
 
 esp_err_t esp_event_cast_broadcasting_isr(esp_event_cast_handle_t handle, void *data)
 {
-    if ((handle == NULL) || (data == NULL)) {
+    if ((handle == NULL) || (data == NULL))
+    {
         ESP_EARLY_LOGE(TAG, "func:%s, invalid parameters, handle=%p, data=%p", __func__, handle, data);
         return ESP_FAIL;
     }
     mutex_lock(handle->_mux);
     esp_evt_cast_item_t *item, *tmp;
-    STAILQ_FOREACH_SAFE(item,  &handle->evt_list, next, tmp) {
-        if (item->que) {
-            if (pdFALSE == xQueueSendFromISR(item->que, data, 0)) {
+    STAILQ_FOREACH_SAFE(item, &handle->evt_list, next, tmp)
+    {
+        if (item->que)
+        {
+            if (pdFALSE == xQueueSendFromISR(item->que, data, 0))
+            {
                 ESP_EARLY_LOGW(TAG, "Queue[%p] send failed, free size:%d", item->que, uxQueueSpacesAvailable(item->que));
             }
         }
@@ -155,15 +172,17 @@ esp_err_t esp_event_cast_broadcasting_isr(esp_event_cast_handle_t handle, void *
 
 esp_err_t esp_event_cast_get_count(esp_event_cast_handle_t handle)
 {
-    if (handle == NULL) {
+    if (handle == NULL)
+    {
         ESP_LOGE(TAG, "func:%s, invalid parameters, handle=%p", __func__, handle);
         return ESP_FAIL;
     }
     mutex_lock(handle->_mux);
     int cnt = 0;
     esp_evt_cast_item_t *item, *tmp;
-    STAILQ_FOREACH_SAFE(item,  &handle->evt_list, next, tmp) {
-        cnt ++;
+    STAILQ_FOREACH_SAFE(item, &handle->evt_list, next, tmp)
+    {
+        cnt++;
     }
     mutex_unlock(handle->_mux);
     return cnt;

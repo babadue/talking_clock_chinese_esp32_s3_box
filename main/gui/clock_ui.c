@@ -49,12 +49,14 @@ struct myclock_ui elements;
 
 static void lvgl_task(void *pvParam)
 {
-    (void) pvParam;
+    (void)pvParam;
     g_guisemaphore = xSemaphoreCreateMutex();
 
-    do {
+    do
+    {
         /* Try to take the semaphore, call lvgl related function on success */
-        if (pdTRUE == xSemaphoreTake(g_guisemaphore, portMAX_DELAY)) {
+        if (pdTRUE == xSemaphoreTake(g_guisemaphore, portMAX_DELAY))
+        {
             lv_task_handler();
             xSemaphoreGive(g_guisemaphore);
         }
@@ -68,7 +70,8 @@ static void lvgl_task(void *pvParam)
 void ui_acquire(void)
 {
     TaskHandle_t task = xTaskGetCurrentTaskHandle();
-    if (g_lvgl_task_handle != task) {
+    if (g_lvgl_task_handle != task)
+    {
         xSemaphoreTake(g_guisemaphore, portMAX_DELAY);
     }
 }
@@ -76,21 +79,22 @@ void ui_acquire(void)
 void ui_release(void)
 {
     TaskHandle_t task = xTaskGetCurrentTaskHandle();
-    if (g_lvgl_task_handle != task) {
+    if (g_lvgl_task_handle != task)
+    {
         xSemaphoreGive(g_guisemaphore);
     }
 }
 
 static void print_time_info(struct tm timeinfo)
 {
-    ESP_LOGI(TAG,"-----------print_time_info-----------");
-    ESP_LOGI(TAG,"print_time_data timeinfo.min: %d", timeinfo.tm_min);
-    ESP_LOGI(TAG,"print_time_data timeinfo.hour: %d", timeinfo.tm_hour); 
-    // ESP_LOGI(TAG,"print_time_data timeinfo.day: %d", timeinfo.tm_da); 
-    // ESP_LOGI(TAG,"print_time_data timeinfo.mon: %d", time_data.mon); 
-    // ESP_LOGI(TAG,"print_time_data timeinfo.year: %d", time_data.year); 
-    // ESP_LOGI(TAG,"print_time_data timeinfo.wday: %d", time_data.wday);     
-    // ESP_LOGI(TAG,"print_time_data timeinfo.am: %d", time_data.am); 
+    ESP_LOGI(TAG, "-----------print_time_info-----------");
+    ESP_LOGI(TAG, "print_time_data timeinfo.min: %d", timeinfo.tm_min);
+    ESP_LOGI(TAG, "print_time_data timeinfo.hour: %d", timeinfo.tm_hour);
+    // ESP_LOGI(TAG,"print_time_data timeinfo.day: %d", timeinfo.tm_da);
+    // ESP_LOGI(TAG,"print_time_data timeinfo.mon: %d", time_data.mon);
+    // ESP_LOGI(TAG,"print_time_data timeinfo.year: %d", time_data.year);
+    // ESP_LOGI(TAG,"print_time_data timeinfo.wday: %d", time_data.wday);
+    // ESP_LOGI(TAG,"print_time_data timeinfo.am: %d", time_data.am);
 }
 
 static void clock_run_cb(lv_timer_t *timer)
@@ -116,8 +120,8 @@ static void clock_run_cb(lv_timer_t *timer)
     tzset();
     localtime_r(&now, &timeinfo);
     // print_time_info(timeinfo);
-    lv_label_set_text_fmt(lab_time, "%02u:%02u", ((timeinfo.tm_hour > 12) ? (timeinfo.tm_hour-12) : ((timeinfo.tm_hour == 0) ? 12 : timeinfo.tm_hour)), time_data.min);
-    rc = strftime(s,sizeof(s),"%A, %B %d %Y", &timeinfo);
+    lv_label_set_text_fmt(lab_time, "%02u:%02u", ((timeinfo.tm_hour > 12) ? (timeinfo.tm_hour - 12) : ((timeinfo.tm_hour == 0) ? 12 : timeinfo.tm_hour)), time_data.min);
+    rc = strftime(s, sizeof(s), "%A, %B %d %Y", &timeinfo);
     lv_label_set_text(lab_date, s);
     lv_label_set_text(lab_ampm, (timeinfo.tm_hour >= 12) ? "PM" : "AM");
 
@@ -128,7 +132,7 @@ static void clock_run_cb(lv_timer_t *timer)
     {
         time_to_read_temp = 0;
         char c[10];
-        int ret = readDHT();    
+        int ret = readDHT();
         errorHandler(ret);
         temperature = getTemperature() * 1.8 + 32;
         humidity = getHumidity();
@@ -142,15 +146,15 @@ static void clock_run_cb(lv_timer_t *timer)
 void ui_clock_display(void)
 {
     esp_log_level_set("clock_ui", ESP_LOG_NONE);
-    ESP_LOGI(TAG,"ui_clock_display ");
+    ESP_LOGI(TAG, "ui_clock_display ");
     const board_res_desc_t *brd = bsp_board_get_description();
     BaseType_t ret_val = xTaskCreatePinnedToCore(lvgl_task, "lvgl_Task", 6 * 1024, NULL, configMAX_PRIORITIES - 3, &g_lvgl_task_handle, 0);
     ESP_ERROR_CHECK((pdPASS == ret_val) ? ESP_OK : ESP_FAIL);
 
-    setDHTgpio( temp_sensor_gpio);  //set reading pin for temp sensor
+    setDHTgpio(temp_sensor_gpio); // set reading pin for temp sensor
 
     ui_acquire();
-    
+
     elements.lab_time = lv_label_create(lv_scr_act());
     elements.lab_date = lv_label_create(lv_scr_act());
     elements.lab_ampm = lv_label_create(lv_scr_act());
@@ -159,13 +163,13 @@ void ui_clock_display(void)
     elements.lab_dateCN = lv_label_create(lv_scr_act());
 
     lv_label_set_text(elements.lab_time, "");
-    lv_label_set_text(elements.lab_date, "");  
-    lv_label_set_text(elements.lab_ampm, "");    
+    lv_label_set_text(elements.lab_date, "");
+    lv_label_set_text(elements.lab_ampm, "");
     lv_label_set_text(elements.lab_temp, "");
-    lv_label_set_text(elements.lab_humi, "");   
-    lv_label_set_text(elements.lab_dateCN, "");      
+    lv_label_set_text(elements.lab_humi, "");
+    lv_label_set_text(elements.lab_dateCN, "");
 
-    //display date at bottom
+    // display date at bottom
     lv_obj_align(elements.lab_dateCN, LV_ALIGN_BOTTOM_MID, 0, -35);
     lv_obj_set_style_text_font(elements.lab_dateCN, &sim_font_cn1000an_20, 0); // 28
 
@@ -198,9 +202,9 @@ void ui_clock_display(void)
         clock_setting = true;
         ui_clock_setting_page();
     }
-    ESP_LOGI(TAG,"ui_clock_display b4 ui release ");
+    ESP_LOGI(TAG, "ui_clock_display b4 ui release ");
 
-    starting_loading_page(true);
+    // starting_loading_page(true);
     ui_release();
     activate_board_btns();
 }
@@ -214,7 +218,6 @@ static void btn_factory_boot_cb(void *arg)
     ui_release();
 
     bsp_btn_register_callback(BOARD_BTN_ID_BOOT, BUTTON_SINGLE_CLICK, NULL, NULL);
-
 }
 
 void activate_board_btns(void)

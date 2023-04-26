@@ -4,6 +4,8 @@
    Unless required by applicable law or agreed to in writing, this
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
+
+   v0.13
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,5 +55,8 @@ void app_main()
     speech();
 
     // // get mp3 files
-    get_new_mp3_list();
+    mp3_list_ready = true;
+    num_of_albums = getNumOfMusicFolders();
+    // ESP_LOGI(TAG, "-----------app_main started1----------- numofalbums: %d", num_of_albums);
+    // get_new_mp3_list();
 }

@@ -10,7 +10,6 @@ void next_mp3(void);
 void play_mp3(void);
 void check_mp3_player_event(void);
 audio_element_state_t mp3_player_state();
-void get_new_mp3_list();
+// void get_new_mp3_list();
 void pause_mp3_task();
-void get_mp3_playlist();
-
+// void get_mp3_playlist();

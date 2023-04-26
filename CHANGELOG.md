@@ -22,3 +22,13 @@
 
     moved to `idf v5.0.1`
 
+[v0.13] (04-26-2023)
+
+    do away playlist component.
+
+    eliminated boot-up waiting screen.
+
+    added commands to go to next and previous mp3 folder.
+
+    cleaned up a little.
+

@@ -10,10 +10,10 @@ extern int temp_sensor_gpio;
 extern Setting_Info setting_data;
 extern bool is_mp3_running;
 extern int volume_steps;
-extern int mp3_ix;
+extern int mp3_ix; // index for mp3 folder
+extern int num_of_albums;
+extern int file_ix; // index for mp3 file in a mp3 folder
 extern void setting_me(void);
 extern void get_mp3_folder(int ix);
 extern char server_ip[16];
 extern char *sdcard;
-
-

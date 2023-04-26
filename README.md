@@ -49,6 +49,8 @@ If you don't want to compile yourself, the `misc` folder has all bin files readi
 * next song: &nbsp; `未来的`, &nbsp; `后来的`
 * increase volume: &nbsp; `更大音乐`, &nbsp; `大声音乐`
 * decrease volume: &nbsp; `降低声音`, &nbsp; `小声音乐`
+* previous mp3 folder: &nbsp; `上专辑`
+* next mp3 folder: &nbsp; `下目录`
 
 No comment on the Chinese command phrases! &nbsp; These were chosen to adapt to my Chinese accent. &nbsp;  You can modify it to adapt to your voice in the `sdkconfig` file. &nbsp; It is in pinyin format.
 <br/><br/>

@@ -24,22 +24,16 @@
 
 #include "esp_peripherals.h"
 #include "periph_sdcard.h"
-// #include "periph_touch.h"
-// #include "periph_adc_button.h"
 #include "board.h"
 
-#include "sdcard_list.h"
-#include "sdcard_scan.h"
 #include "sdcard_helper.h"
 #include "lvgl/lvgl.h"
 #include "settingsdotcom.h"
 #include "tts_helpers.h"
 #include "esp_event.h"
-// #include "protocol_examples_common.h"
 #include "file_serving_example_common.h"
 
-
-// int time_to_check_mp3; 
+// int time_to_check_mp3;
 static void mp3_player_event(void);
 static const char *TAG = "PLAY_MP3_CONTROL_EXAMPLE";
 int core = 1;
@@ -48,52 +42,14 @@ bool mp3_started = false;
 
 audio_pipeline_handle_t pipeline;
 audio_element_handle_t i2s_stream_writer, mp3_decoder, fatfs_stream_reader, rsp_handle;
-playlist_operator_handle_t sdcard_list_handle = NULL;
 esp_periph_set_handle_t set;
 audio_event_iface_handle_t evt;
-char *url = NULL;
-// char *sdcard = "/sdcard/music";
-// char *sdcard = "/sdcard";
-
+char *url = ""; // NULL;
 static TaskHandle_t g_lvgl_task_handle;
-// SemaphoreHandle_t g_guisemaphore;
 void ui_acquire(void);
 void ui_release(void);
 audio_element_state_t mp3_player_state();
 static void check_mp3_player_event();
-
-void sdcard_url_save_cb(void *user_data, char *url)
-{
-    playlist_operator_handle_t sdcard_handle = (playlist_operator_handle_t)user_data;
-    esp_err_t ret = sdcard_list_save(sdcard_handle, url);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Fail to save sdcard url to sdcard playlist");
-    }
-}
-
-void get_mp3_playlist()
-{
-    char sdcard_path[40] = "";
-    char mp3_folder[20] = "";
-    
-    get_music_folder_from_list(mp3_folder, mp3_ix);
-    strcpy(sdcard_path, sdcard);
-    strcat(sdcard_path, "/");
-    strcat(sdcard_path, mp3_folder);
-    ESP_LOGI(TAG, "get_mp3_playlist sdcard_path: %s", sdcard_path);
-    // list_dir(sdcard_path);
-    // list_folders(sdcard);
-
-    ESP_LOGI(TAG, "Set up a sdcard playlist and scan sdcard music save to it");
-    sdcard_list_create(&sdcard_list_handle);
-    sdcard_scan(sdcard_url_save_cb, sdcard_path, 0, (const char *[]) {"mp3"}, 1, sdcard_list_handle);
-    ESP_LOGI(TAG, "after Set up a sdcard playlist and scan sdcard music save to it");
-    // printf("get_mp3_playlist after Set up a sdcard playlist and scan sdcard music save to it\n");
-    // sdcard_list_show(sdcard_list_handle);
-
-    mp3_list_ready = true;
-
-}
 
 void pmp3_sdcard(void)
 {
@@ -102,39 +58,7 @@ void pmp3_sdcard(void)
     esp_periph_config_t periph_cfg = DEFAULT_ESP_PERIPH_SET_CONFIG();
     periph_cfg.task_core = core1;
     set = esp_periph_set_init(&periph_cfg);
-    // audio_board_sdcard_init(set, SD_MODE_1_LINE);
     audio_board_sdcard_init(set, SD_MODE_4_LINE);
-
-}
-
-void get_new_mp3_list_now()
-{
-    ESP_LOGI(TAG, "get_new_mp3_list_now");
-    sdcard_list_destroy(sdcard_list_handle);
-    get_mp3_playlist();
-}
-
-static void get_new_mp3_list_task(void *arg)
-{
-    (void) arg;
-    while (true) {
-        get_new_mp3_list_now();
-        break;
-    }
-    // mp3_list_ready = true;
-    ESP_LOGI(TAG, "get_new_mp3_list_task b4 vtaskdelete");
-    vTaskDelete(NULL);
-}
-
-// start task
-void get_new_mp3_list(void)
-{
-    // BaseType_t ret_val = xTaskCreatePinnedToCore(get_new_mp3_list_task, "get mp3 Task", 4 * 1024, NULL, 5, NULL, 0);
-    BaseType_t ret_val = xTaskCreatePinnedToCore(get_new_mp3_list_task, "get mp3 Task", 4 * 1024, NULL, 5, NULL, 0);  //11423
-    ESP_ERROR_CHECK_WITHOUT_ABORT((pdPASS == ret_val) ? ESP_OK : ESP_FAIL);
-
-    // get_new_mp3_list_now();
-    // get_mp3_playlist();
 }
 
 void init_pmp3(void)
@@ -155,7 +79,7 @@ void init_pmp3(void)
         ESP_LOGI(TAG, "do Create i2s stream to write data to codec chip");
         i2s_stream_cfg_t i2s_cfg = I2S_STREAM_CFG_DEFAULT();
         i2s_cfg.task_core = core;
-        i2s_cfg.i2s_port = I2S_NUM_1;   //use by tts = 1
+        i2s_cfg.i2s_port = I2S_NUM_1; // use by tts = 1
         i2s_cfg.i2s_config.sample_rate = 44100;
         i2s_cfg.type = AUDIO_STREAM_WRITER;
         i2s_stream_writer = i2s_stream_init(&i2s_cfg);
@@ -173,10 +97,10 @@ void init_pmp3(void)
     ESP_LOGI(TAG, "[4.3] Create resample filter");
     rsp_filter_cfg_t rsp_cfg = DEFAULT_RESAMPLE_FILTER_CONFIG();
     rsp_cfg.task_core = core;
-    rsp_cfg.dest_rate = 32000;  
-    rsp_cfg.complexity = 1;  //default 2
+    rsp_cfg.dest_rate = 32000;
+    rsp_cfg.complexity = 1; // default 2
     rsp_handle = rsp_filter_init(&rsp_cfg);
-    
+
     ESP_LOGI(TAG, "[4.4] Create fatfs stream to read data from sdcard");
     fatfs_stream_cfg_t fatfs_cfg = FATFS_STREAM_CFG_DEFAULT();
     fatfs_cfg.task_core = core;
@@ -192,7 +116,6 @@ void init_pmp3(void)
     ESP_LOGI(TAG, "[4.6] Link it together [sdcard]-->fatfs_stream-->mp3_decoder-->resample-->i2s_stream-->[codec_chip]");
     const char *link_tag[4] = {"file", "mp3", "filter", "i2s"};
     audio_pipeline_link(pipeline, &link_tag[0], 4);
-
 }
 
 void pause_mp3(void)
@@ -205,7 +128,7 @@ void pause_mp3(void)
 void resume_mp3(void)
 {
     ESP_LOGW(TAG, " resume_mp3");
-    set_voice_volume(setting_data.music_volume);  
+    set_voice_volume(setting_data.music_volume);
     is_mp3_running = true;
     audio_pipeline_resume(pipeline);
 }
@@ -216,7 +139,7 @@ void stop_mp3(void)
     is_mp3_running = false;
     mp3_started = false;
     if (pipeline)
-    {        
+    {
         ESP_LOGI(TAG, "[ 7 ] Stop audio_pipeline");
         audio_pipeline_stop(pipeline);
         audio_pipeline_wait_for_stop(pipeline);
@@ -230,7 +153,6 @@ void stop_mp3(void)
         audio_pipeline_remove_listener(pipeline);
 
         /* Stop all peripherals before removing the listener */
-        // esp_periph_set_stop_all(set);  //12-23-22
         audio_event_iface_remove_listener(esp_periph_set_get_event_iface(set), evt);
         ESP_LOGI(TAG, "[ 7 ] Stop all peripherals before removing the listene");
 
@@ -239,19 +161,14 @@ void stop_mp3(void)
 
         /* Release all resources */
         audio_pipeline_deinit(pipeline);
-        // audio_element_deinit(i2s_stream_writer);  
         audio_element_deinit(mp3_decoder);
         audio_element_deinit(rsp_handle);
-        // esp_periph_set_destroy(set);   
 
         pipeline = NULL;
         mp3_decoder = NULL;
         rsp_handle = NULL;
         evt = NULL;
-
     }
-
-
 }
 
 audio_element_state_t mp3_player_state()
@@ -263,23 +180,30 @@ audio_element_state_t mp3_player_state()
 
 void previous_mp3()
 {
-    set_voice_volume(setting_data.music_volume);  
-    sdcard_list_prev(sdcard_list_handle, 1, &url);
-    ESP_LOGW(TAG, "previous song URL: %s", url);
+    set_voice_volume(setting_data.music_volume);
+    char url[100] = "";
+    char xxx[1] = "";
+    --file_ix;
+    get_music_url(url);
+    ESP_LOGE(TAG, "previous_mp3 mp3_ix: %d url: %s", mp3_ix, url);
+    ESP_LOGW(TAG, "previous_mp3 song URL: %s", url);
     audio_element_set_uri(fatfs_stream_reader, url);
     audio_pipeline_reset_ringbuffer(pipeline);
     audio_pipeline_reset_elements(pipeline);
     audio_pipeline_change_state(pipeline, AEL_STATE_INIT);
     audio_pipeline_run(pipeline);
     is_mp3_running = true;
-
 }
 
 void next_mp3()
 {
-    set_voice_volume(setting_data.music_volume);  
-    sdcard_list_next(sdcard_list_handle, 1, &url);
-    ESP_LOGW(TAG, "next song URL: %s", url);
+    set_voice_volume(setting_data.music_volume);
+    ESP_LOGW(TAG, "next song 1 URL: %s", url);
+    char url[100] = "";
+    char xxx[1] = "";
+    ++file_ix;
+    get_music_url(url);
+    ESP_LOGW(TAG, "next_mp3 song 2 URL: %s", url);
     audio_element_set_uri(fatfs_stream_reader, url);
     audio_pipeline_reset_ringbuffer(pipeline);
     audio_pipeline_reset_elements(pipeline);
@@ -300,13 +224,14 @@ void activate_listener_mp3(void)
 
 static void mp3_player_listener_task(void *arg)
 {
-    (void) arg;
+    (void)arg;
     const int STATS_TICKS = pdMS_TO_TICKS(2 * 1000);
     activate_listener_mp3();
-        while (mp3_started) {
-            check_mp3_player_event();
-        }
-  
+    while (mp3_started)
+    {
+        check_mp3_player_event();
+    }
+
     vTaskDelete(NULL);
 }
 
@@ -314,29 +239,29 @@ static void start_mp3player_listener_task()
 {
     BaseType_t ret_val = xTaskCreatePinnedToCore(mp3_player_listener_task, "mp3 player listener Task", 4 * 1024, NULL, 5, NULL, 1);
     ESP_ERROR_CHECK_WITHOUT_ABORT((pdPASS == ret_val) ? ESP_OK : ESP_FAIL);
-
 }
 
 static void play_mp3_task(void *arg)
 {
     ESP_LOGW(TAG, "play_mp3_task");
-    (void) arg;
+    (void)arg;
     const int STATS_TICKS = pdMS_TO_TICKS(3 * 1000);
-    // bool start_player_event = false;
-    while (true) {
+    while (true)
+    {
         if (!pipeline)
         {
             init_pmp3();
         }
-        sdcard_list_current(sdcard_list_handle, &url);
-        ESP_LOGW(TAG, "current song URL: %s", url);
+        char url[100] = "";
+        char xxx[1] = "";
+        get_music_url(url);
+        ESP_LOGW(TAG, "current song 2 URL: %s", url);
         audio_element_set_uri(fatfs_stream_reader, url);
         audio_pipeline_reset_ringbuffer(pipeline);
         audio_pipeline_reset_elements(pipeline);
         audio_pipeline_change_state(pipeline, AEL_STATE_INIT);
-        set_voice_volume(setting_data.music_volume);  
+        set_voice_volume(setting_data.music_volume);
         audio_pipeline_run(pipeline);
-        // time_to_check_mp3 = 0;
         start_mp3player_listener_task();
         break;
     }
@@ -362,27 +287,31 @@ static void check_mp3_player_event()
     */
     audio_event_iface_msg_t msg;
     esp_err_t ret = audio_event_iface_listen(evt, &msg, portMAX_DELAY);
-    if (ret != ESP_OK) 
+    if (ret != ESP_OK)
     {
         ESP_LOGE(TAG, "[ * ] Event interface error : %d", ret);
     }
-    else if (msg.source_type == AUDIO_ELEMENT_TYPE_ELEMENT) 
+    else if (msg.source_type == AUDIO_ELEMENT_TYPE_ELEMENT)
     {
         // ESP_LOGI(TAG, "while 1 if AUDIO_ELEMENT_TYPE_ELEMENT after if decoder");
         // Advance to the next song when previous finishes
-        if (msg.source == (void *) i2s_stream_writer && msg.cmd == AEL_MSG_CMD_REPORT_STATUS) 
+        if (msg.source == (void *)i2s_stream_writer && msg.cmd == AEL_MSG_CMD_REPORT_STATUS)
         {
 
             audio_element_state_t el_state = audio_element_get_state(i2s_stream_writer);
-            if (el_state == AEL_STATE_FINISHED) 
+            if (el_state == AEL_STATE_FINISHED)
             {
                 set_voice_volume(setting_data.music_volume);
-                sdcard_list_next(sdcard_list_handle, 1, &url);
+                char url[100] = "";
+                char xxx[1] = "";
+                ++file_ix;
+                get_music_url(url);
+                ESP_LOGE(TAG, "check_mp3_player_event mp3_ix: %d url: %s", mp3_ix, url);
                 ESP_LOGW(TAG, "check_mp3_player_event URL: %s", url);
                 /* In previous versions, audio_pipeline_terminal() was called here. It will close all the elememnt task and when use
-                * the pipeline nextcheck_mp3_player_event time, all the tasks should be restart again. It speed too much time when we switch to another music.
-                * So we use another method to acheive this as below.
-                */
+                 * the pipeline nextcheck_mp3_player_event time, all the tasks should be restart again. It speed too much time when we switch to another music.
+                 * So we use another method to acheive this as below.
+                 */
                 audio_element_set_uri(fatfs_stream_reader, url);
                 audio_pipeline_reset_ringbuffer(pipeline);
                 audio_pipeline_reset_elements(pipeline);
@@ -390,39 +319,5 @@ static void check_mp3_player_event()
                 audio_pipeline_run(pipeline);
             }
         }
-    }  // else if ESP_OK
+    } // else if ESP_OK
 }
-
-void unMountCurrentSDCARD()
-{
-
-    sdcard_list_destroy(sdcard_list_handle);
-}
-
-// // start task 
-// static void player_pause_event_task(void *arg)
-// {
-//     (void) arg;
-//     // const int STATS_TICKS = pdMS_TO_TICKS(1 * 1000);
-//     while (true) {
-//         pause_mp3();
-//         ESP_LOGW(TAG, "player_pause_event_task after pause_mp3");
-//         break;
-//     }
-//     vTaskDelete(NULL);
-// }
-
-// // start task start
-// static void player_pause_task_start(void *arg)
-// {
-//     BaseType_t ret_val = xTaskCreatePinnedToCore(player_pause_event_task, "player pause event task", 4 * 1024, NULL, 5, NULL, 1);
-//     ESP_ERROR_CHECK_WITHOUT_ABORT((pdPASS == ret_val) ? ESP_OK : ESP_FAIL);
-// }
-
-// void pause_mp3_task()
-// {
-
-//     player_pause_event_task(NULL);
-
-// }
-

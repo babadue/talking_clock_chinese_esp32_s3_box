@@ -70,11 +70,10 @@ static lv_obj_t *label_fs;
 static lv_obj_t *label_ip;
 
 static lv_obj_t *slider_vol;
-static lv_obj_t * label_vol;
+static lv_obj_t *label_vol;
 
-static lv_obj_t * wifisw;
+static lv_obj_t *wifisw;
 static lv_obj_t *label_wifisw;
-
 
 LV_FONT_DECLARE(lv_font_digits_90b4);
 
@@ -88,203 +87,202 @@ static void event_handler_btn(lv_event_t *event)
 {
     lv_obj_t *target = lv_event_get_target(event);
     if (target == lbtn_hour)
+    {
+        if (time_data.hour > 1)
         {
-            if (time_data.hour > 1)
-            {
-                time_data.hour--;
-            }
-            else if (time_data.hour == 1)
-            {
-                time_data.hour = 12;
-                time_data.am = !time_data.am;
-                lv_label_set_text(label_ampm, (time_data.am ? "AM" : "PM"));
-            } 
-            char hrs_str[2];
-            tostring(hrs_str, time_data.hour);
-            lv_label_set_text(label_hour, hrs_str);
+            time_data.hour--;
         }
-    else if (target == rbtn_hour)
+        else if (time_data.hour == 1)
         {
-            if (time_data.hour < 12)
-            {
-                time_data.hour++;
-            }
-            else if (time_data.hour == 12)
-            {
-                time_data.hour = 1;
-                time_data.am = !time_data.am;
-                lv_label_set_text(label_ampm, (time_data.am ? "AM" : "PM"));
-            } 
-            char hrs_str[2];
-            tostring(hrs_str, time_data.hour); 
-            lv_label_set_text(label_hour, hrs_str);
-        }
-        else if (target == lbtn_min)
-        {
-            time_data.min = (time_data.min > 0) ? (time_data.min - 1) : 59;
-            char min_str[2];
-            tostring(min_str, time_data.min);
-            lv_label_set_text(label_min, min_str);
-        }
-        else if (target == rbtn_min)
-        {
-            time_data.min = (time_data.min < 59) ? (time_data.min + 1) : 0;
-            char min_str[2];
-            tostring(min_str, time_data.min);
-            lv_label_set_text(label_min, min_str);
-        }
-        else if (target == lbtn_mon)
-        {
-            time_data.mon = (time_data.mon > 1) ? (time_data.mon - 1) : 12;
-            char mon_str[2];
-            tostring(mon_str, time_data.mon);
-            lv_label_set_text(label_mon, mon_str);
-        }
-        else if (target == rbtn_mon)
-        {
-            time_data.mon = (time_data.mon < 12) ? (time_data.mon + 1) : 1;
-            char mon_str[2];
-            tostring(mon_str, time_data.mon);
-            lv_label_set_text(label_mon, mon_str);
-        }
-        else if (target == lbtn_day)
-        {
-            time_data.day = (time_data.day > 1) ? (time_data.day - 1) : 31;
-            char day_str[2];
-            tostring(day_str, time_data.day);
-            lv_label_set_text(label_day, day_str);
-        }
-        else if (target == rbtn_day)
-        {
-            time_data.day = (time_data.day < 31) ? (time_data.day + 1) : 1;
-            char day_str[2];
-            tostring(day_str, time_data.day);
-            lv_label_set_text(label_day, day_str);
-        }
-        else if (target == lbtn_year)
-        {
-            time_data.year = (time_data.year > 2023) ? (time_data.year - 1) : 2023;
-            char year_str[2];
-            tostring(year_str, time_data.year);
-            lv_label_set_text(label_year, year_str);
-        }
-        else if (target == rbtn_year)
-        {
-            time_data.year = (time_data.year < 2050) ? (time_data.year + 1) : 2050;
-            char year_str[2];
-            tostring(year_str, time_data.year);
-            lv_label_set_text(label_year, year_str);
-        }
-        else if (target == btn_done)
-        {
-            if (datevalid(time_data.day, time_data.mon, time_data.year))
-            {
-                // print_time_data(time_data);
-                setme_datetime(time_data);
-                time_data = get_clock_time11();
-                ESP_LOGI(TAG,"event_handler_btn done read time_data again after settme_datetime");
-                // print_time_data(time_data);
-                lv_obj_t *obj = lv_event_get_user_data(event);
-                lv_obj_del(obj);
-                clock_setting = false;
-                activate_board_btns();
-            }
-            else
-            {
-                lv_obj_set_style_text_color(label_day, lv_color_hex(0xff0000), 0);
-            }
-        }
-        else if (target == btn_cancel)
-        {
-            lv_obj_t *obj = lv_event_get_user_data(event);
-            lv_obj_del(obj);
-            activate_board_btns();
-            clock_setting = false;
-        }
-        else if (target == btn_ampm)
-        {
+            time_data.hour = 12;
             time_data.am = !time_data.am;
             lv_label_set_text(label_ampm, (time_data.am ? "AM" : "PM"));
         }
-        else if (target == btn_md)
+        char hrs_str[2];
+        tostring(hrs_str, time_data.hour);
+        lv_label_set_text(label_hour, hrs_str);
+    }
+    else if (target == rbtn_hour)
+    {
+        if (time_data.hour < 12)
         {
-            setting_data.md = !setting_data.md;
-            lv_label_set_text(label_md, (setting_data.md ? "Mundane" : "!Mundane"));
+            time_data.hour++;
         }
-        else if (target == btn_fs)
+        else if (time_data.hour == 12)
         {
-            ESP_LOGI(TAG, "btn event btn_fs ");
-            if (mp3_list_ready)
+            time_data.hour = 1;
+            time_data.am = !time_data.am;
+            lv_label_set_text(label_ampm, (time_data.am ? "AM" : "PM"));
+        }
+        char hrs_str[2];
+        tostring(hrs_str, time_data.hour);
+        lv_label_set_text(label_hour, hrs_str);
+    }
+    else if (target == lbtn_min)
+    {
+        time_data.min = (time_data.min > 0) ? (time_data.min - 1) : 59;
+        char min_str[2];
+        tostring(min_str, time_data.min);
+        lv_label_set_text(label_min, min_str);
+    }
+    else if (target == rbtn_min)
+    {
+        time_data.min = (time_data.min < 59) ? (time_data.min + 1) : 0;
+        char min_str[2];
+        tostring(min_str, time_data.min);
+        lv_label_set_text(label_min, min_str);
+    }
+    else if (target == lbtn_mon)
+    {
+        time_data.mon = (time_data.mon > 1) ? (time_data.mon - 1) : 12;
+        char mon_str[2];
+        tostring(mon_str, time_data.mon);
+        lv_label_set_text(label_mon, mon_str);
+    }
+    else if (target == rbtn_mon)
+    {
+        time_data.mon = (time_data.mon < 12) ? (time_data.mon + 1) : 1;
+        char mon_str[2];
+        tostring(mon_str, time_data.mon);
+        lv_label_set_text(label_mon, mon_str);
+    }
+    else if (target == lbtn_day)
+    {
+        time_data.day = (time_data.day > 1) ? (time_data.day - 1) : 31;
+        char day_str[2];
+        tostring(day_str, time_data.day);
+        lv_label_set_text(label_day, day_str);
+    }
+    else if (target == rbtn_day)
+    {
+        time_data.day = (time_data.day < 31) ? (time_data.day + 1) : 1;
+        char day_str[2];
+        tostring(day_str, time_data.day);
+        lv_label_set_text(label_day, day_str);
+    }
+    else if (target == lbtn_year)
+    {
+        time_data.year = (time_data.year > 2023) ? (time_data.year - 1) : 2023;
+        char year_str[2];
+        tostring(year_str, time_data.year);
+        lv_label_set_text(label_year, year_str);
+    }
+    else if (target == rbtn_year)
+    {
+        time_data.year = (time_data.year < 2050) ? (time_data.year + 1) : 2050;
+        char year_str[2];
+        tostring(year_str, time_data.year);
+        lv_label_set_text(label_year, year_str);
+    }
+    else if (target == btn_done)
+    {
+        if (datevalid(time_data.day, time_data.mon, time_data.year))
+        {
+            // print_time_data(time_data);
+            setme_datetime(time_data);
+            time_data = get_clock_time11();
+            ESP_LOGI(TAG, "event_handler_btn done read time_data again after settme_datetime");
+            // print_time_data(time_data);
+            lv_obj_t *obj = lv_event_get_user_data(event);
+            lv_obj_del(obj);
+            clock_setting = false;
+            activate_board_btns();
+        }
+        else
+        {
+            lv_obj_set_style_text_color(label_day, lv_color_hex(0xff0000), 0);
+        }
+    }
+    else if (target == btn_cancel)
+    {
+        lv_obj_t *obj = lv_event_get_user_data(event);
+        lv_obj_del(obj);
+        activate_board_btns();
+        clock_setting = false;
+    }
+    else if (target == btn_ampm)
+    {
+        time_data.am = !time_data.am;
+        lv_label_set_text(label_ampm, (time_data.am ? "AM" : "PM"));
+    }
+    else if (target == btn_md)
+    {
+        setting_data.md = !setting_data.md;
+        lv_label_set_text(label_md, (setting_data.md ? "Mundane" : "!Mundane"));
+    }
+    else if (target == btn_fs)
+    {
+        ESP_LOGI(TAG, "btn event btn_fs ");
+        if (mp3_list_ready)
+        {
+            // lv_label_set_text(label_fs, (wifi ? "!FS" : "FS"));
+            ESP_LOGI(TAG, "btn event btn_fs mp3_list_ready 2 ");
+            // starting_loading_page(false);
+            if (is_mp3_running)
             {
-                // lv_label_set_text(label_fs, (wifi ? "!FS" : "FS"));
-                ESP_LOGI(TAG, "btn event btn_fs mp3_list_ready 2 ");
-                // starting_loading_page(false);
-                if (is_mp3_running)
-                {
-                    ESP_LOGI(TAG, "btn event btn_fs stop mp3 b4 start fs");
-                    stop_mp3();
-                }
-                wifi = !wifi;
-                lv_label_set_text(label_fs, (wifi ? "!FS" : "FS"));
-                if (wifi)
-                {
-                    ESP_LOGI(TAG, "btn event start_fs wifi");
-                    if (!net_ser)
-                    {
-                        ESP_LOGI(TAG, "btn event set net ser");
-                        net_ser = true;
-                        start_net_ser();
-                    }
-                    
-                    void (*ptr)() = &update_ip;
-                    start_wifi_cb(ptr);
-                    // start_mount_sdcard();
-                    start_fs();
-                }
-                else
-                {
-                    ESP_LOGI(TAG, "btn event stop_fs !wifi");
-                    //  ESP_ERROR_CHECK(example_stop_file_server());
-                    //  start_unmount_sdcard();
-
-                    stop_fs();
-                    stop_wifi();
-                    lv_label_set_text(label_ip, "");
-                }
+                ESP_LOGI(TAG, "btn event btn_fs stop mp3 b4 start fs");
+                stop_mp3();
             }
+            wifi = !wifi;
+            lv_label_set_text(label_fs, (wifi ? "!FS" : "FS"));
+            if (wifi)
+            {
+                ESP_LOGI(TAG, "btn event start_fs wifi");
+                if (!net_ser)
+                {
+                    ESP_LOGI(TAG, "btn event set net ser");
+                    net_ser = true;
+                    start_net_ser();
+                }
 
+                void (*ptr)() = &update_ip;
+                start_wifi_cb(ptr);
+                // start_mount_sdcard();
+                start_fs();
+            }
+            else
+            {
+                ESP_LOGI(TAG, "btn event stop_fs !wifi");
+                //  ESP_ERROR_CHECK(example_stop_file_server());
+                //  start_unmount_sdcard();
 
+                stop_fs();
+                stop_wifi();
+                lv_label_set_text(label_ip, "");
+            }
         }
+    }
 }
 
-static void slider_event_cb(lv_event_t * e)
+static void slider_event_cb(lv_event_t *e)
 {
-    lv_obj_t * slider = lv_event_get_target(e);
+    lv_obj_t *slider = lv_event_get_target(e);
     /*Refresh the text*/
-    lv_label_set_text_fmt(label_vol, "%"LV_PRId32, lv_slider_get_value(slider));
+    lv_label_set_text_fmt(label_vol, "%" LV_PRId32, lv_slider_get_value(slider));
     setting_data.music_volume = lv_slider_get_value(slider);
     set_voice_volume(setting_data.music_volume);
 }
 
 static void folders_list_cb(lv_event_t *event)
 {
-    lv_obj_t *folders_list = (lv_obj_t *) event->target;
+    lv_obj_t *folders_list = (lv_obj_t *)event->target;
     uint16_t selected = lv_dropdown_get_selected(folders_list);
     mp3_ix = selected;
 
     // get_mp3_folder(selected);
-    get_new_mp3_list();
+    // get_new_mp3_list();
 }
 
-static void sw_event_handler(lv_event_t * e)
+static void sw_event_handler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * obj = lv_event_get_target(e);
-    if(code == LV_EVENT_VALUE_CHANGED) {
+    lv_obj_t *obj = lv_event_get_target(e);
+    if (code == LV_EVENT_VALUE_CHANGED)
+    {
         LV_LOG_USER("State: %s\n", lv_obj_has_state(obj, LV_STATE_CHECKED) ? "On" : "Off");
-            // lv_state_t sw = lv_obj_get_state(wifisw);
+        // lv_state_t sw = lv_obj_get_state(wifisw);
         softAP = lv_obj_has_state(wifisw, LV_STATE_CHECKED);
-        ESP_LOGI(TAG,"sw_event_handler softAP: %d", softAP);
+        ESP_LOGI(TAG, "sw_event_handler softAP: %d", softAP);
         lv_label_set_text(label_wifisw, (softAP ? "softAP" : "Station"));
     }
 }
@@ -306,11 +304,11 @@ void ui_clock_setting_page(void)
     lv_obj_align(page, LV_ALIGN_CENTER, 0, 0);
 
     lv_obj_t *label_title;
-    lv_obj_t *label_lb; 
+    lv_obj_t *label_lb;
     lv_obj_t *label_rb;
 
-    // row 0  
-    btn_done= lv_btn_create(page);
+    // row 0
+    btn_done = lv_btn_create(page);
     label_lb = lv_label_create(btn_done);
     lv_obj_set_size(btn_done, 60, 40);
     lv_obj_align(btn_done, LV_ALIGN_TOP_LEFT, 0, upgap + delta * i++);
@@ -319,7 +317,7 @@ void ui_clock_setting_page(void)
     lv_label_set_text(label_lb, "DONE");
     lv_obj_add_event_cb(btn_done, event_handler_btn, LV_EVENT_CLICKED, page);
 
-    btn_cancel= lv_btn_create(page);
+    btn_cancel = lv_btn_create(page);
     label_lb = lv_label_create(btn_cancel);
     lv_obj_set_size(btn_cancel, 60, 40);
     lv_obj_align(btn_cancel, LV_ALIGN_TOP_RIGHT, 0, lv_obj_get_y_aligned(btn_done));
@@ -328,14 +326,14 @@ void ui_clock_setting_page(void)
     lv_label_set_text(label_lb, "CANCEL");
     lv_obj_add_event_cb(btn_cancel, event_handler_btn, LV_EVENT_CLICKED, page);
 
-    btn_ampm= lv_btn_create(page);
+    btn_ampm = lv_btn_create(page);
     label_ampm = lv_label_create(btn_ampm);
     lv_obj_set_size(btn_ampm, 60, 40);
     lv_obj_align(btn_ampm, LV_ALIGN_TOP_MID, 0, lv_obj_get_y_aligned(btn_done));
     lv_obj_align(label_ampm, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_text_font(label_ampm, &lv_font_montserrat_14, 0);
     lv_label_set_text(label_ampm, (time_data.am ? "AM" : "PM"));
-    lv_obj_add_event_cb(btn_ampm,event_handler_btn, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(btn_ampm, event_handler_btn, LV_EVENT_CLICKED, NULL);
 
     // row 1
     lbtn_hour = lv_btn_create(page);
@@ -357,7 +355,7 @@ void ui_clock_setting_page(void)
 
     lv_obj_align(label_lb, LV_ALIGN_CENTER, 0, 0);
     lv_obj_align(label_rb, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_style_text_font(label_lb, &lv_font_montserrat_40, 0);  //40
+    lv_obj_set_style_text_font(label_lb, &lv_font_montserrat_40, 0); // 40
     lv_obj_set_style_text_font(label_rb, &lv_font_montserrat_40, 0);
     lv_label_set_text(label_lb, "-");
     lv_label_set_text(label_rb, "+");
@@ -369,7 +367,7 @@ void ui_clock_setting_page(void)
     tostring(hrs_str, time_data.hour);
     ESP_LOGI(TAG, "ui_clock_setting_page hours: %s", hrs_str);
     lv_label_set_text(label_hour, hrs_str);
-    lv_obj_set_style_text_font(label_hour, &lv_font_montserrat_40, 0);  //40
+    lv_obj_set_style_text_font(label_hour, &lv_font_montserrat_40, 0); // 40
     lv_obj_add_event_cb(lbtn_hour, event_handler_btn, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(rbtn_hour, event_handler_btn, LV_EVENT_CLICKED, NULL);
 
@@ -404,7 +402,7 @@ void ui_clock_setting_page(void)
     char min_str[3];
     if (time_data.min == 0)
     {
-        strcpy(min_str,"00");
+        strcpy(min_str, "00");
     }
     else
     {
@@ -520,84 +518,84 @@ void ui_clock_setting_page(void)
     lv_obj_add_event_cb(lbtn_year, event_handler_btn, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(rbtn_year, event_handler_btn, LV_EVENT_CLICKED, NULL);
 
-// mp3 folders list
+    // mp3 folders list
     lv_obj_t *folders_list = lv_dropdown_create(page);
     lv_dropdown_clear_options(folders_list);
     lv_obj_set_width(folders_list, 200);
-    lv_obj_align(folders_list, LV_ALIGN_TOP_RIGHT, 0, 20 + upgap + delta * i++);  
-    lv_obj_add_event_cb(folders_list, folders_list_cb, LV_EVENT_VALUE_CHANGED, NULL); 
+    lv_obj_align(folders_list, LV_ALIGN_TOP_RIGHT, 0, 20 + upgap + delta * i++);
+    lv_obj_add_event_cb(folders_list, folders_list_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
-    //populate list
+    // populate list
     int ix = 0;
     char folder[20] = "";
-    ESP_LOGI(TAG,"ui_clock_setttng_ mp3 1: %s", folder);
+    ESP_LOGI(TAG, "ui_clock_setttng_ mp3 1: %s", folder);
 
     get_music_folder_from_list(folder, ix);
-    ESP_LOGI(TAG,"ui_clock_setttng_ mp3 2: %s", folder);
+    ESP_LOGI(TAG, "ui_clock_setttng_ mp3 2: %s", folder);
     while (strcmp(folder, "") != 0)
     {
-        ESP_LOGI(TAG,"ui_clock_setttng_ mp3 inside while ix: %d folder: %s", ix, folder);
+        ESP_LOGI(TAG, "ui_clock_setttng_ mp3 inside while ix: %d folder: %s", ix, folder);
         lv_dropdown_add_option(folders_list, folder, ix++);
         get_music_folder_from_list(folder, ix);
     }
+    num_of_albums = ix;
+    ESP_LOGI(TAG, "ui_clock_setttng_ mp3 inside while num_of_albums: %d", num_of_albums);
     lv_dropdown_set_selected(folders_list, mp3_ix);
 
-// volume slider
+    // volume slider
     slider_vol = lv_slider_create(page);
     label_vol = lv_label_create(page);
-    lv_obj_set_width(slider_vol, 160); 
+    lv_obj_set_width(slider_vol, 160);
     lv_obj_set_size(label_vol, 60, 40);
-    lv_obj_align(slider_vol, LV_ALIGN_TOP_RIGHT, 0, upgap + 50 + delta * i++);     
-    lv_obj_align(label_vol, LV_ALIGN_TOP_LEFT, 95, lv_obj_get_y_aligned(slider_vol) -7);   
-    lv_obj_set_style_text_font(label_vol, &lv_font_montserrat_24, 0);  
-    lv_label_set_text_fmt(label_vol, "%"LV_PRId32, (int32_t)setting_data.music_volume);
-    lv_obj_add_event_cb(slider_vol, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);     /*Assign an event function*/
+    lv_obj_align(slider_vol, LV_ALIGN_TOP_RIGHT, 0, upgap + 50 + delta * i++);
+    lv_obj_align(label_vol, LV_ALIGN_TOP_LEFT, 95, lv_obj_get_y_aligned(slider_vol) - 7);
+    lv_obj_set_style_text_font(label_vol, &lv_font_montserrat_24, 0);
+    lv_label_set_text_fmt(label_vol, "%" LV_PRId32, (int32_t)setting_data.music_volume);
+    lv_obj_add_event_cb(slider_vol, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL); /*Assign an event function*/
     lv_slider_set_value(slider_vol, setting_data.music_volume, LV_ANIM_OFF);
 
-//wifisw
+    // wifisw
     wifisw = lv_switch_create(page);
     label_wifisw = lv_label_create(page);
     lv_obj_set_size(label_wifisw, 100, 40);
-    lv_obj_align(wifisw, LV_ALIGN_TOP_RIGHT, 0, 50 + upgap + delta * i++);  
-    lv_obj_align(label_wifisw, LV_ALIGN_TOP_LEFT, 180, lv_obj_get_y_aligned(wifisw) +10);
-    lv_obj_set_style_text_font(label_wifisw, &lv_font_montserrat_14, 0);    
+    lv_obj_align(wifisw, LV_ALIGN_TOP_RIGHT, 0, 50 + upgap + delta * i++);
+    lv_obj_align(label_wifisw, LV_ALIGN_TOP_LEFT, 180, lv_obj_get_y_aligned(wifisw) + 10);
+    lv_obj_set_style_text_font(label_wifisw, &lv_font_montserrat_14, 0);
     lv_obj_add_state(wifisw, (softAP) ? LV_STATE_CHECKED : LV_STATE_DEFAULT);
-    ESP_LOGI(TAG,"ui_clock_setttng_page 1 softAP: %d", softAP);
+    ESP_LOGI(TAG, "ui_clock_setttng_page 1 softAP: %d", softAP);
     lv_label_set_text(label_wifisw, (lv_obj_has_state(wifisw, LV_STATE_CHECKED) ? "softAP" : "Station"));
-    ESP_LOGI(TAG,"ui_clock_setttng_page 2 softAP: %d", softAP);
+    ESP_LOGI(TAG, "ui_clock_setttng_page 2 softAP: %d", softAP);
     lv_obj_add_event_cb(wifisw, sw_event_handler, LV_EVENT_ALL, NULL);
 
-// fs button
+    // fs button
     btn_fs = lv_btn_create(page);
     label_fs = lv_label_create(btn_fs);
     label_ip = lv_label_create(page);
     lv_obj_set_size(btn_fs, 50, 30);
     lv_obj_set_size(label_ip, 100, 30);
-    lv_obj_align(btn_fs, LV_ALIGN_TOP_LEFT, 100, lv_obj_get_y_aligned(wifisw));  
+    lv_obj_align(btn_fs, LV_ALIGN_TOP_LEFT, 100, lv_obj_get_y_aligned(wifisw));
     lv_obj_align(label_fs, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_align(label_ip, LV_ALIGN_TOP_LEFT, 5, lv_obj_get_y_aligned(wifisw) + 5); 
+    lv_obj_align(label_ip, LV_ALIGN_TOP_LEFT, 5, lv_obj_get_y_aligned(wifisw) + 5);
     lv_obj_set_style_text_font(label_fs, &lv_font_montserrat_14, 0);
     lv_obj_set_style_text_font(label_ip, &lv_font_montserrat_14, 0);
     lv_label_set_text(label_fs, (wifi ? "!FS" : "FS"));
     lv_label_set_text(label_ip, "");
-    lv_obj_add_event_cb(btn_fs,event_handler_btn, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(btn_fs, event_handler_btn, LV_EVENT_CLICKED, NULL);
 
     // md button
     btn_md = lv_btn_create(page);
     label_md = lv_label_create(btn_md);
     lv_obj_set_size(btn_md, 200, 40);
-    lv_obj_align(btn_md, LV_ALIGN_TOP_RIGHT, 0, 60 + upgap + delta * i++);  
+    lv_obj_align(btn_md, LV_ALIGN_TOP_RIGHT, 0, 60 + upgap + delta * i++);
     lv_obj_align(label_md, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_text_font(label_md, &lv_font_montserrat_24, 0);
     lv_label_set_text(label_md, (setting_data.md ? "Mundane" : "!Mundane"));
-    lv_obj_add_event_cb(btn_md,event_handler_btn, LV_EVENT_CLICKED, NULL);
-
+    lv_obj_add_event_cb(btn_md, event_handler_btn, LV_EVENT_CLICKED, NULL);
 }
 
 void user_input(void)
 {
     ui_clock_setting_page();
-
 }
 
 void update_clock(void)
@@ -624,7 +622,7 @@ void update_clock(void)
         mon = 11;
         day = 9;
         year = 2023;
-    } 
+    }
     char hrs_str[2];
     tostring(hrs_str, hour);
     lv_label_set_text(label_hour, hrs_str);
@@ -644,6 +642,4 @@ void update_clock(void)
     char year_str[2];
     tostring(year_str, year);
     lv_label_set_text(label_year, year_str);
-
 }
-

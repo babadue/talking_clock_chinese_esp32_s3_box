@@ -8,9 +8,11 @@
 #include "sdcard_helper.h"
 
 int temp_sensor_gpio = 38;
-int    volume_steps = 3;
-bool    is_mp3_running = false;
+int volume_steps = 3;
+bool is_mp3_running = false;
 int mp3_ix = 0;
+int num_of_albums = 0;
+int file_ix = 0;
 bool wifi = false;
 bool net_ser = false;
 bool mp3_list_ready = false;
@@ -21,15 +23,14 @@ Setting_Info setting_data =
     {
         .md = false,
         .voice_volume = 75,
-        .music_volume = 70
-    };
+        .music_volume = 70};
 
 static const char *TAG = "settingsdotcom";
 char *sdcard = "/sdcard/music";
 
 void setting_me(void)
 {
-    ESP_LOGI(TAG,"-----------setting----------");
+    ESP_LOGI(TAG, "-----------setting----------");
     strcpy(server_ip, "");
     softAP = true;
     mp3_list_ready = false;
@@ -41,6 +42,7 @@ void setting_me(void)
     setting_data.voice_volume = 75;
     setting_data.music_volume = 70;
     is_mp3_running = false;
-    mp3_ix = 0;
+    mp3_ix = 0; // 4
+    num_of_albums = 0;
+    file_ix = 0;
 }
-

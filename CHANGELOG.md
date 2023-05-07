@@ -32,3 +32,7 @@
 
     cleaned up a little.
 
+[v0.14] (05-07-2023)
+
+    Goto the first / last folder if at the last / first folder when issuing previos/next folder commands.
+

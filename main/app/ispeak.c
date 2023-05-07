@@ -406,7 +406,8 @@ void volume_down(void)
 
 void previous_album(void)
 {
-    (mp3_ix > 0) ? mp3_ix-- : 0;
+    // (mp3_ix > 0) ? mp3_ix-- : 0;
+    mp3_ix--;
     char album[20] = "";
     get_music_folder_from_list(album, mp3_ix);
     ESP_LOGI(TAG, "previous_album b4 mp3_ix: %d album: %s", mp3_ix, album);
@@ -440,7 +441,8 @@ void previous_album(void)
 void next_album(void)
 {
     ESP_LOGI(TAG, "next_album b4 mp3_ix: %d", mp3_ix);
-    (mp3_ix < num_of_albums - 1) ? mp3_ix++ : mp3_ix;
+    // (mp3_ix < num_of_albums - 1) ? mp3_ix++ : mp3_ix;
+    mp3_ix++;
     char album[20] = "";
     get_music_folder_from_list(album, mp3_ix);
     ESP_LOGI(TAG, "next_album num_of_albums:%d mp3_ix: %d album: %s", num_of_albums, mp3_ix, album);

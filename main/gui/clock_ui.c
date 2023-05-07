@@ -145,7 +145,7 @@ static void clock_run_cb(lv_timer_t *timer)
 
 void ui_clock_display(void)
 {
-    esp_log_level_set("clock_ui", ESP_LOG_NONE);
+    // esp_log_level_set("clock_ui", ESP_LOG_NONE);
     ESP_LOGI(TAG, "ui_clock_display ");
     const board_res_desc_t *brd = bsp_board_get_description();
     BaseType_t ret_val = xTaskCreatePinnedToCore(lvgl_task, "lvgl_Task", 6 * 1024, NULL, configMAX_PRIORITIES - 3, &g_lvgl_task_handle, 0);

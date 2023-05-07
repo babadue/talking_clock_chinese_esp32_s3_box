@@ -40,6 +40,9 @@ void app_main()
     // initial some variables
     setting_me();
 
+    num_of_albums = getNumOfMusicFolders();
+    ESP_LOGI(TAG, "-----------app_main started1----------- num_of_albums: %d", num_of_albums);
+
     ESP_LOGI(TAG, "-----------app_main started1-----------");
     //  ESP_LOGI(TAG, "app_main core id is: %d", xPortGetCoreID());
 
@@ -56,7 +59,7 @@ void app_main()
 
     // // get mp3 files
     mp3_list_ready = true;
-    num_of_albums = getNumOfMusicFolders();
+    // num_of_albums = getNumOfMusicFolders();
     // ESP_LOGI(TAG, "-----------app_main started1----------- numofalbums: %d", num_of_albums);
     // get_new_mp3_list();
 }

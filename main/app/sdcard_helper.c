@@ -135,10 +135,23 @@ void get_music_folder_from_list(char folder[20], int ix)
     //     ESP_LOGI(TAG,"get_music_folder_from_list i: %d: folder:  %s",i, folders_list[i]);
     // }
     strcpy(folder, "");
-    if (ix < f_num)
+    if (ix < 0)
     {
-        strcat(folder, folders_list[ix]);
+        ix = --f_num;
+        mp3_ix = ix;
     }
+    else if (ix >= f_num)
+    {
+        ix = 0;
+        mp3_ix = ix;
+    }
+    strcat(folder, folders_list[ix]);
+    // mp3_ix = ix;
+    ESP_LOGE(TAG, "get_music_folder_from_list folder: %s mp3_ix: %d", folder, mp3_ix);
+    // if (ix < f_num)
+    // {
+    //     strcat(folder, folders_list[ix]);
+    // }
     closedir(p_dir);
 }
 

@@ -526,22 +526,32 @@ void ui_clock_setting_page(void)
     lv_obj_add_event_cb(folders_list, folders_list_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     // populate list
+    int temp_ix = mp3_ix;
     int ix = 0;
     char folder[20] = "";
     ESP_LOGI(TAG, "ui_clock_setttng_ mp3 1: %s", folder);
 
     get_music_folder_from_list(folder, ix);
     ESP_LOGI(TAG, "ui_clock_setttng_ mp3 2: %s", folder);
-    while (strcmp(folder, "") != 0)
+    // while (strcmp(folder, "") != 0)
+    // {
+    //     ESP_LOGI(TAG, "ui_clock_setttng_ mp3 inside while ix: %d folder: %s", ix, folder);
+    //     lv_dropdown_add_option(folders_list, folder, ix++);
+    //     get_music_folder_from_list(folder, ix);
+    // }
+    // int temp_ix = mp3_ix;
+    ESP_LOGI(TAG, "ui_clock_setttng_ mp3 1 num_of_albums: %d temp_ix: %d", num_of_albums, temp_ix);
+    for (int i = 0; i < num_of_albums; i++)
     {
+        get_music_folder_from_list(folder, ix);
         ESP_LOGI(TAG, "ui_clock_setttng_ mp3 inside while ix: %d folder: %s", ix, folder);
         lv_dropdown_add_option(folders_list, folder, ix++);
-        get_music_folder_from_list(folder, ix);
     }
-    num_of_albums = ix;
-    ESP_LOGI(TAG, "ui_clock_setttng_ mp3 inside while num_of_albums: %d", num_of_albums);
+    // num_of_albums = ix;
+    ESP_LOGI(TAG, "ui_clock_setttng_ mp3 2 num_of_albums: %d mp3_ix: %d", num_of_albums, mp3_ix);
+    mp3_ix = temp_ix;
     lv_dropdown_set_selected(folders_list, mp3_ix);
-
+    ESP_LOGI(TAG, "ui_clock_setttng_ mp3 3 num_of_albums: %d mp3_ix: %d", num_of_albums, mp3_ix);
     // volume slider
     slider_vol = lv_slider_create(page);
     label_vol = lv_label_create(page);
